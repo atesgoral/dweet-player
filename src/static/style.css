@@ -5,6 +5,7 @@ body {
 }
 
 #container {
+  display: inline-block;
   width: 568px;
   height: 319.5px;
   border: 1px solid #ccc;

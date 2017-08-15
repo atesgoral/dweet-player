@@ -36,7 +36,7 @@ function loop() {
   }
 }
 
-let id = 3066;
+let id = 3060;
 
 function fetch(id) {
   $.ajax(`/api/dweets/${id}`, { dataType: 'text' })

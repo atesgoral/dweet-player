@@ -1,10 +1,17 @@
 body {
-  background: #888;
+  background: #eee;
   margin: 0;
   padding: 100px;
 }
 
-#c {
+#container {
   width: 568px;
   height: 319.5px;
+  border: 1px solid #ccc;
+  overflow: hidden;
+}
+
+#c {
+  width: 100%;
+  background: white;
 }

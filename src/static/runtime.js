@@ -23,14 +23,13 @@ function getRenderer() {
 
   return {
     canvas: c,
-    advance: function (amount) {
+    setFrame: function (f) {
+      frame = f;
       time = frame / 60;
 
       if (time * 60 | 0 == frame - 1) {
         time += 0.000001;
       }
-
-      frame += amount;
     },
     render: function () {
       u(time);
@@ -38,8 +37,36 @@ function getRenderer() {
   };
 }
 
+const renderProgress = function u(t) {
+  x.beginPath();
+  x.arc(c.width / 2, c.height / 2, c.height / 3, 0, 2 * Math.PI * -t, true);
+  x.lineCap = 'round';
+  x.lineWidth = c.height / 20;
+  x.stroke();
+}
+
+const progressFrameAdvancer = {
+  done: 0,
+  fakeProgress: 0,
+  getFrame: function () {
+    this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
+    return this.fakeProgress * 60;
+  },
+  updateProgress: function (pending, total) {
+    this.done = 1 - pending / total;
+  }
+};
+
+const monotonousFrameAdvancer = {
+  frame: 0,
+  getFrame: function () {
+    return this.frame++;
+  }
+};
+
 $(function () {
-  let renderer = null;
+  let renderer = getRenderer(renderProgress.toString());
+  let frameAdvancer = progressFrameAdvancer;
 
   const canvas = $("#c").get(0);
 
@@ -48,18 +75,12 @@ $(function () {
 
   const ctx = canvas.getContext('2d');
 
-  let frameCount = 0;
+  function render() {
+    requestAnimationFrame(render);
 
-  function loop() {
-    requestAnimationFrame(loop);
+    //const renderer = renderers[(frameCount / 100 | 0) % renderers.length];
 
-    const advanceAmount = Math.sin(frameCount / 10);
-
-    frameCount++;
-
-    const renderer = renderers[(frameCount / 100 | 0) % renderers.length];
-
-    renderer.advance(advanceAmount);
+    renderer.setFrame(frameAdvancer.getFrame());
 
     try {
       renderer.render();
@@ -75,21 +96,36 @@ $(function () {
     }
   }
 
-  let ids = [ 701, 888, 1231, 739, 933, 676, 855, 683, 1829, 697, 433, 135 ];
-  let renderers = [];
+  render();
 
-  function fetch(id) {
-    return $.ajax(`/api/dweets/${id}`, { dataType: 'text' }).then(getRenderer);
+  let topDweetIds = [ 701, 888, 1231, 739, 933, 676, 855, 683, 1829, 697, 433, 135 ];
+
+  let dweetRenderers = [];
+  let pending = 0;
+
+  function progress(renderer) {
+    progressFrameAdvancer.updateProgress(--pending, fetches.length);
+    return renderer;
   }
 
-  const fetches = ids
+  const fetches = topDweetIds
     .sort(function () { return Math.random() - 0.5; })
     .slice(0, 3)
-    .map(fetch);
+    .map(function (id, idx) {
+      return $.ajax(`/api/dweets/${id}`, { dataType: 'text' })
+        .then(getRenderer)
+        .then(progress);
+    });
+
+  pending = fetches.length;
 
   Promise.all(fetches)
-    .then(function (_renderers) {
-      renderers = _renderers;
-      loop();
+    .then(function (_dweetRenderers) {
+      dweetRenderers = _dweetRenderers;
+
+      setTimeout(function () {
+        frameAdvancer = monotonousFrameAdvancer;
+        renderer = dweetRenderers[0];
+      }, 1000);
     });
 });

@@ -10,6 +10,7 @@ body {
   height: 319.5px;
   border: 1px solid #ccc;
   overflow: hidden;
+  background: white;
 }
 
 #c {

@@ -64,6 +64,18 @@ const monotonousFrameAdvancer = {
   }
 };
 
+const sineFrameAdvancer = {
+  a: 0,
+  frame: 0,
+  getFrame: function () {
+    const frame = this.frame;
+
+    this.frame += Math.sin(this.a += 0.01);
+
+    return frame;
+  }
+};
+
 const overwriteBlender = {
   beforeDraw: function (ctx) {
     ctx.globalAlpha = 1;
@@ -191,6 +203,7 @@ $(function () {
 
         setInterval(function () {
           dweetIdx = (dweetIdx + 1) % dweetRenderers.length;
+          frameAdvancer = sineFrameAdvancer;
           renderer = dweetRenderers[dweetIdx];
           // blender = fadeBlender.reset();
           blender = overwriteBlender;

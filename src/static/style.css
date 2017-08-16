@@ -1,16 +1,35 @@
 body {
   background: #eee;
   margin: 0;
-  padding: 100px;
+  padding: 0;
+  font-family: 'Varela Round', sans-serif;
+  font-size: 100%;
+  color: #666;
+}
+
+a {
+  text-decoration: none;
+  color: #000;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 #container {
-  display: inline-block;
   width: 568px;
+  margin: 0 auto;
   height: 319.5px;
   border: 1px solid #ccc;
   overflow: hidden;
   background: white;
+  margin-top: 1rem;
+}
+
+#status {
+  width: 568px;
+  margin: 0 auto;
+  margin-top: 0.5rem;
 }
 
 #c {

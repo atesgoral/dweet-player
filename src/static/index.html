@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Dweet Player</title>
+  <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script
     src="https://code.jquery.com/jquery-3.2.1.min.js"
@@ -13,6 +14,10 @@
   <div id="container">
     <canvas id="c"></canvas>
   </div>
+  <div id="status">Loading&hellip;</div>
   <script src="runtime.js"></script>
+  <script type="text/html" id="dweet-info-tpl">
+    <a href="https://www.dwitter.net/d/${id}">#${id}</a> by <a href="https://www.dwitter.net/u/${user}">${user}</a>
+  </script>
 </body>
 </html>

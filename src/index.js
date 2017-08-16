@@ -13,6 +13,7 @@ app.get('/api/dweets/:id', (req, res, next) => {
     .then((response) => {
       // @todo error checking
       const $ = cheerio.load(response);
+      // @todo the following probably overkill when a simple RegExp could suffice
       const script = $('body script').html();
       const ast = esprima.parseScript(script, { range: true });
 

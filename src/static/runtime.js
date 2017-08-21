@@ -164,8 +164,8 @@
     $('#status').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
   }
 
-  function setDweetInfo(id, author) {
-    setStatus($('#dweet-info-tpl').html(), { id, author });
+  function showDweetInfo(dweet) {
+    setStatus($('#dweet-info-tpl').html(), dweet);
   }
 
   function setupRendering(canvas) {
@@ -322,7 +322,7 @@
   function setActiveDweet(idx) {
     dweetIdx = idx;
     dweet = dweets[dweetIdx];
-    setDweetInfo(dweet.id, dweet.author);
+    showDweetInfo(dweet);
   }
 
   function advanceToNextDweet() {
@@ -343,7 +343,6 @@
 
         return task
           .then((result) => {
-            console.log(pending, total);
             progressFrameAdvancer.updateProgress(--pending, total);
             return result;
           });

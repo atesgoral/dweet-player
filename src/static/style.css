@@ -33,6 +33,13 @@ a:hover {
   margin-top: 0.5rem;
 }
 
+#status pre {
+  margin: 1.5rem 0 0 0;
+  word-break: break-all;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
 #c {
   width: 100%;
   background: white;

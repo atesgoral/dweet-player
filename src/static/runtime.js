@@ -1,4 +1,8 @@
 (() => {
+  // const dweetIds = [ 701, 888, 1231, 739, 933, 676, 855, 683, 1829, 697, 433, 135 ];
+  const dweetIds = [ 701, 888, 1231, 739, 933 ];
+  const audioUrl = 'new_year_dubstep_minimix.ogg';
+
   function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -19,6 +23,19 @@
 
     return fetch
       .then(createRuntime);
+  }
+
+  function fetchAudio(url, context) {
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+
+      request.open('GET', url, true);
+      request.responseType = 'arraybuffer';
+
+      request.onload = () => context.decodeAudioData(request.response, resolve, reject);
+
+      request.send();
+    });
   }
 
   // @todo pass in as arg to IIFE
@@ -196,10 +213,7 @@
         return arguments[0];
       }
 
-      // let dweetIds = [ 701, 888, 1231, 739, 933, 676, 855, 683, 1829, 697, 433, 135 ];
-      let dweetIds = [ 701, 888, 1231, 739, 933 ];
-
-      const fetches = dweetIds
+      const dweetFetches = dweetIds
         // .sort(function () { return Math.random() - 0.5; })
         // .slice(0, 3)
         .map((id, idx) => {
@@ -207,13 +221,22 @@
           pending++;
 
           return fetchDweet(id, idx)
-            .then(progress);
+            .then(progress)
+            .then((dweetRenderer) => dweetRenderers.push(dweetRenderer))
         });
 
-      Promise.all(fetches)
-        .then((_dweetRenderers) => {
-          dweetRenderers = _dweetRenderers;
-        })
+      const audioCtx = new AudioContext();
+
+      total++;
+      pending++;
+
+      const audioFetch = fetchAudio(audioUrl, audioCtx)
+        .then(progress)
+        .then(() => {
+
+        });
+
+      Promise.all(dweetFetches.concat(audioFetch))
         .then(() => pause(1000))
         .then(() => {
           let dweetIdx = 0;

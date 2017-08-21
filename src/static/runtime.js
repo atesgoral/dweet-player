@@ -39,6 +39,10 @@
 
   let beat = 0;
 
+  function beatHandler() {
+
+  }
+
   /* Blenders */
 
   const overwriteBlender = {
@@ -114,7 +118,7 @@
   let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
 
-  let dweetRenderers = [];
+  let dweets = [];
 
   function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -203,6 +207,7 @@
 
       if (avg - prevAvg > 25) {
         beat = 1;
+        beatHandler();
       } else {
         beat *= 0.5;
       }
@@ -289,6 +294,11 @@
     });
   }
 
+  function setActiveDweet(idx) {
+    renderer = dweets[idx];
+    setDweetInfo(renderer.id, renderer.user);
+  }
+
   const tasks = (() => {
     let total = 0;
     let pending = 0;
@@ -326,7 +336,7 @@
     // .slice(0, 3)
     .forEach((id, idx) => tasks
       .add(fetchDweet(id, idx))
-      .then((renderer) => dweetRenderers.push(renderer))
+      .then((dweet) => dweets.push(dweet))
     );
 
   tasks.whenDone()
@@ -335,15 +345,13 @@
       let dweetIdx = 0;
 
       frameAdvancer = monotonousFrameAdvancer;
-      renderer = dweetRenderers[dweetIdx];
-      setDweetInfo(renderer.id, renderer.user);
+      setActiveDweet(dweetIdx);
       blender = fadeOutToWhiteBlender.reset();
 
       setInterval(() => {
-        dweetIdx = (dweetIdx + 1) % dweetRenderers.length;
+        dweetIdx = (dweetIdx + 1) % dweets.length;
         frameAdvancer = sineFrameAdvancer;
-        renderer = dweetRenderers[dweetIdx];
-        setDweetInfo(renderer.id, renderer.user);
+        setActiveDweet(dweetIdx);
         // blender = fadeBlender.reset();
         blender = zoomToBeatBlender;
       }, 5000);

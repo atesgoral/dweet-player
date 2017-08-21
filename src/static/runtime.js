@@ -344,7 +344,7 @@
         total++;
         pending++;
 
-        taskList.push(tasks);
+        taskList.push(task);
 
         return task
           .then((result) => {
@@ -352,9 +352,7 @@
             return result;
           });
       },
-      whenDone: () => {
-        return Promise.all(taskList);
-      }
+      whenDone: () => Promise.all(taskList)
     };
   })();
 
@@ -375,7 +373,7 @@
     );
 
   tasks.whenDone()
-    .then(() => pause(2000))
+    .then(() => pause(1000))
     .then(() => {
       startAudio();
       setActiveDweet(0);

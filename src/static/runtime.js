@@ -1,5 +1,14 @@
 (() => {
-  const dweetIds = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
+  const dweetCache = {
+    '701': { id: 701, author: 'sigveseb', src: '(F=Z=>{for(x.fillStyle=R(W=1/Z*4e3,W/2,W/4),i=Z*Z*2;n=i%Z,m=i/Z|0,i--;n%2^m%2&&x.fillRect((n-t%2-1)*W,(S(t)+m-1)*W,W,W));Z&&F(Z-6)})(36)//rm' },
+    '888': { id: 888, author: 'jczimm', src: 'c.width=1920;for(i=0;i<300;i++)for(j=0;j<6;j++){x.fillRect(960+200*C(i)*S(T(t\/1.1)+j\/i),540+200*S(i),10,10)}' },
+    '1231': { id: 1231, author: 'iverjo', src: 'c.width^=0;for(i=9;i<2e3;i+=2)s=3\/(9.1-(t+i\/99)%9),x.beginPath(),j=i*7+S(i*4+t+S(t)),x.lineWidth=s*s,x.arc(960,540,s*49,j,j+.6),x.stroke()' },
+    '739': { id: 739, author: 'donbright', src: 'c.width=900;\u534A=450;for(i=0.0;i<360;i+=1){x.lineTo(\u534A+C(i*t\/10)*i,\u534A*9\/16+S(i*t\/10)*i)};x.stroke();' },
+    '933': { id: 933, author: 'p01', src: 'for(d=2e3;d--;x.fillRect(960+d*C(a),540+d*S(a),24,24))a=Math.random()*6.3,x.fillStyle=R(e=255*C(t-1e3\/d*S(t-a-C(a*99\/d))),99*S(a-e\/d),6e4\/d)' }
+  };
+
+  //const dweetIds = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
+  const dweetIds = [ 701, 888, 1231, 739, 933 ];
   // const audioUrl = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/9473/new_year_dubstep_minimix.ogg';
   const audioUrl = 'new_year_dubstep_minimix.ogg';
 
@@ -249,7 +258,13 @@
   }
 
   function fetchDweet(id) {
-    return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
+    const cached = dweetCache[id];
+
+    const fetch = cached
+      ? pause(3000 * Math.random()).then(() => cached)
+      : $.ajax(`/api/dweets/${id}`, { dataType: 'json' });
+
+    return fetch
       .then(createRuntime);
   }
 
@@ -328,6 +343,7 @@
 
         return task
           .then((result) => {
+            console.log(pending, total);
             progressFrameAdvancer.updateProgress(--pending, total);
             return result;
           });
@@ -366,6 +382,6 @@
     .then(() => {
       advanceToNextDweet();
       blender = zoomToBeatBlender;
-      beatConcsciousDweetAdvancer.waitBy(5000);
+      beatConcsciousDweetAdvancer.waitBy(4000);
     });
 })();

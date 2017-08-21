@@ -4,23 +4,34 @@ const cheerio = require('cheerio');
 
 const app = express();
 
+const dweetCache = {};
+
 app.get('/api/dweets/:id', (req, res, next) => {
-  const id = req.params.id;
+  const id = parseInt(req.params.id, 10);
 
-  request(`https://www.dwitter.net/d/${id}`)
-    .then((response) => {
-      // @todo error checking
-      const $ = cheerio.load(response);
-      const author = $('.dweet-author a').text();
-      const src = $('.code-input').val();
+  let dweet = dweetCache[id];
 
-      res.json({
-        id,
-        author,
-        src
-      });
-    })
-    .catch(next);
+  if (dweet) {
+    res.json(dweet);
+  } else {
+    request(`https://www.dwitter.net/d/${id}`)
+      .then((response) => {
+        const $ = cheerio.load(response);
+        const author = $('.dweet-author a').text();
+        const src = $('.code-input').val();
+
+        dweet = {
+          id,
+          author,
+          src
+        };
+
+        dweetCache[id] = dweet;
+
+        res.json(dweet);
+      })
+      .catch(next);
+  }
 });
 
 app.use(express.static('./src/static'));

@@ -1,39 +1,24 @@
 const express = require('express');
 const request = require('request-promise-native');
 const cheerio = require('cheerio');
-const esprima = require('esprima');
-const estraverse = require('estraverse');
 
 const app = express();
 
 app.get('/api/dweets/:id', (req, res, next) => {
   const id = req.params.id;
 
-  request(`https://dweet.dwitter.net/id/${id}`)
+  request(`https://www.dwitter.net/d/${id}`)
     .then((response) => {
       // @todo error checking
       const $ = cheerio.load(response);
-      // @todo the following probably overkill when a simple RegExp could suffice
-      const script = $('body script').html();
-      const ast = esprima.parseScript(script, { range: true });
+      const author = $('.dweet-author a').text();
+      const src = $('.code-input').val();
 
-      let u = null;
-
-      estraverse.traverse(ast, {
-        enter: function (node) {
-          if (node.type === 'FunctionDeclaration' && node.id && node.id.name === 'u') {
-            u = script.slice.apply(script, node.range);
-            this.break();
-          }
-        }
+      res.json({
+        id,
+        author,
+        src
       });
-
-      if (u) {
-        res.type('application/javascript');
-        res.send(u);
-      } else {
-        // @todo
-      }
     })
     .catch(next);
 });

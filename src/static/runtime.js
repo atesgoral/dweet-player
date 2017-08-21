@@ -169,19 +169,31 @@
     }
   };
 
-  let total = 0;
-  let pending = 0;
+  const tasks = (() => {
+    let total = 0;
+    let pending = 0;
+    const taskList = [];
 
-  function progress() {
-    progressFrameAdvancer.updateProgress(--pending, total);
-    return arguments[0];
-  }
+    return {
+      add: (task) => {
+        total++;
+        pending++;
 
-  total++;
-  pending++;
+        taskList.push(tasks);
 
-  const canvasWait = getCanvas()
-    .then(progress)
+        return task
+          .then((result) => {
+            progressFrameAdvancer.updateProgress(--pending, total);
+            return result;
+          });
+      },
+      whenDone: () => {
+        return Promise.all(taskList);
+      }
+    };
+  })();
+
+  tasks.add(getCanvas())
     .then((canvas) => {
       canvas.width = 1920;
       canvas.height = 1080;
@@ -219,30 +231,19 @@
 
   let dweetRenderers = [];
 
-  const dweetFetches = dweetIds
+  dweetIds
     // .sort(function () { return Math.random() - 0.5; })
     // .slice(0, 3)
-    .map((id, idx) => {
-      total++;
-      pending++;
-
-      return fetchDweet(id, idx)
-        .then(progress)
-        .then((dweetRenderer) => dweetRenderers.push(dweetRenderer))
-    });
+    .forEach((id, idx) => tasks.add(fetchDweet(id, idx)).then((renderer) => dweetRenderers.push(renderer)));
 
   const audioCtx = new AudioContext();
 
-  total++;
-  pending++;
-
-  const audioFetch = fetchAudio(audioUrl, audioCtx)
-    .then(progress)
+  tasks.add(fetchAudio(audioUrl, audioCtx))
     .then(() => {
 
     });
 
-  Promise.all(dweetFetches.concat(audioFetch))
+  tasks.whenDone()
     .then(() => pause(1000))
     .then(() => {
       let dweetIdx = 0;

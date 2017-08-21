@@ -177,10 +177,11 @@
       render();
 
       let dweetRenderers = [];
+      let total = 0;
       let pending = 0;
 
       function progress() {
-        progressFrameAdvancer.updateProgress(--pending, fetches.length);
+        progressFrameAdvancer.updateProgress(--pending, total);
         return arguments[0];
       }
 
@@ -196,12 +197,13 @@
             ? pause(100 * idx).then(() => cached)
             : $.ajax(`/api/dweets/${id}`, { dataType: 'json' });
 
+          total++;
+          pending++;
+
           return fetch
             .then(createRuntime)
             .then(progress);
         });
-
-      pending = fetches.length;
 
       Promise.all(fetches)
         .then((_dweetRenderers) => {

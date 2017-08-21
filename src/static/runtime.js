@@ -3,6 +3,97 @@
   const dweetIds = [ 701, 888, 1231, 739, 933 ];
   const audioUrl = 'new_year_dubstep_minimix.ogg';
 
+  /* Frame advancers */
+
+  const progressFrameAdvancer = {
+    done: 0,
+    fakeProgress: 0,
+    getFrame: function () {
+      this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
+      return this.fakeProgress * 60;
+    },
+    updateProgress: function (pending, total) {
+      this.done = 1 - pending / total;
+    }
+  };
+
+  const monotonousFrameAdvancer = {
+    frame: 0,
+    getFrame: function () {
+      return this.frame++;
+    }
+  };
+
+  const sineFrameAdvancer = {
+    a: 0,
+    frame: 0,
+    getFrame: function () {
+      const frame = this.frame;
+
+      this.frame += Math.sin(this.a += 0.01);
+
+      return frame;
+    }
+  };
+
+  /* Blenders */
+
+  const overwriteBlender = {
+    beforeDraw: function (ctx) {
+      ctx.globalAlpha = 1;
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+  };
+
+  const fadeOutToWhiteBlender = {
+    opacity: 0,
+    reset: function () {
+      this.opacity = 0;
+      return this;
+    },
+    beforeDraw: function (ctx) {
+      ctx.globalAlpha = this.opacity;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+      if (this.opacity < 1) {
+        this.opacity += 0.01;
+      }
+    }
+  };
+
+  const fadeBlender = {
+    opacity: 0,
+    reset: function () {
+      this.opacity = 0;
+      return this;
+    },
+    beforeDraw: function (ctx) {
+      ctx.globalAlpha = this.opacity;
+
+      if (this.opacity < 1) {
+        this.opacity += 0.01;
+      }
+    }
+  };
+
+  const progressRendererDweet = () => {
+    '--marker--';
+    x.clearRect(0, 0, c.width, c.height);
+    x.beginPath();
+    x.arc(c.width / 2, c.height / 2, c.height / 3, 0, 2 * Math.PI * -t, true);
+    x.lineCap = 'round';
+    x.lineWidth = c.height / 20 * (1 - t);
+    x.stroke();
+    '--marker--';
+  }
+
+  let renderer = createRuntime({ src: progressRendererDweet.toString().split("'--marker--';")[1] });
+  let frameAdvancer = progressFrameAdvancer;
+  let blender = overwriteBlender;
+
+  let dweetRenderers = [];
+
   function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -17,6 +108,91 @@
 
   function setDweetInfo(id, user) {
     setStatus($('#dweet-info-tpl').html(), { id, user });
+  }
+
+  function setupRendering(canvas) {
+    canvas.width = 1920;
+    canvas.height = 1080;
+
+    const ctx = canvas.getContext('2d');
+
+    function render() {
+      requestAnimationFrame(render);
+
+      //const renderer = renderers[(frameCount / 100 | 0) % renderers.length];
+
+      renderer.setFrame(frameAdvancer.getFrame());
+
+      try {
+        renderer.render();
+
+        blender.beforeDraw(ctx);
+
+        ctx.drawImage(
+          renderer.canvas,
+          0, 0, renderer.canvas.width, renderer.canvas.width * 1080 / 1920,
+          0, 0, canvas.width, canvas.height
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    render();
+  }
+
+  function decodeAudio(data, ctx) {
+    return new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
+  }
+
+  function setupAudio(data) {
+    const ctx = new AudioContext();
+
+    const source = ctx.createBufferSource();
+
+    const processor = ctx.createScriptProcessor(2048, 1, 1);
+
+    const analyser = ctx.createAnalyser();
+    analyser.smoothingTimeConstant = 0.3;
+    analyser.fftSize = 1024;
+
+    source.connect(analyser);
+    analyser.connect(processor);
+
+    const bins = new Uint8Array(analyser.frequencyBinCount);
+
+    let beat = 0;
+
+    let prevAvg = 0;
+
+    processor.onaudioprocess = () => {
+      analyser.getByteFrequencyData(bins);
+
+      let sum = 0;
+
+      for (let i = 0; i < bins.length; i++) {
+        sum += bins[i];
+      }
+
+      const avg = sum / bins.length;
+
+      if (avg - prevAvg > 25) {
+        beat = 1;
+      } else {
+        beat *= 0.5;
+      }
+
+      prevAvg = avg;
+    };
+
+    processor.connect(ctx.destination);
+    source.connect(ctx.destination);
+
+    return decodeAudio(data, ctx)
+      .then((buffer) => {
+        source.buffer = buffer;
+        source.start();
+      });
   }
 
   const dweetCache = {
@@ -37,14 +213,14 @@
       .then(createRuntime);
   }
 
-  function fetchAudio(url, context) {
+  function fetchAudio(url) {
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
 
       request.open('GET', url, true);
       request.responseType = 'arraybuffer';
 
-      request.onload = () => context.decodeAudioData(request.response, resolve, reject);
+      request.onload = () => resolve(request.response);
 
       request.send();
     });
@@ -88,87 +264,6 @@
     });
   }
 
-  const renderProgress = () => {
-    '--marker--';
-    x.clearRect(0, 0, c.width, c.height);
-    x.beginPath();
-    x.arc(c.width / 2, c.height / 2, c.height / 3, 0, 2 * Math.PI * -t, true);
-    x.lineCap = 'round';
-    x.lineWidth = c.height / 20 * (1 - t);
-    x.stroke();
-    '--marker--';
-  }
-
-  const progressFrameAdvancer = {
-    done: 0,
-    fakeProgress: 0,
-    getFrame: function () {
-      this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
-      return this.fakeProgress * 60;
-    },
-    updateProgress: function (pending, total) {
-      this.done = 1 - pending / total;
-    }
-  };
-
-  const monotonousFrameAdvancer = {
-    frame: 0,
-    getFrame: function () {
-      return this.frame++;
-    }
-  };
-
-  const sineFrameAdvancer = {
-    a: 0,
-    frame: 0,
-    getFrame: function () {
-      const frame = this.frame;
-
-      this.frame += Math.sin(this.a += 0.01);
-
-      return frame;
-    }
-  };
-
-  const overwriteBlender = {
-    beforeDraw: function (ctx) {
-      ctx.globalAlpha = 1;
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    }
-  };
-
-  const fadeOutToWhiteBlender = {
-    opacity: 0,
-    reset: function () {
-      this.opacity = 0;
-      return this;
-    },
-    beforeDraw: function (ctx) {
-      ctx.globalAlpha = this.opacity;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-      if (this.opacity < 1) {
-        this.opacity += 0.01;
-      }
-    }
-  };
-
-  const fadeBlender = {
-    opacity: 0,
-    reset: function () {
-      this.opacity = 0;
-      return this;
-    },
-    beforeDraw: function (ctx) {
-      ctx.globalAlpha = this.opacity;
-
-      if (this.opacity < 1) {
-        this.opacity += 0.01;
-      }
-    }
-  };
-
   const tasks = (() => {
     let total = 0;
     let pending = 0;
@@ -193,55 +288,21 @@
     };
   })();
 
-  tasks.add(getCanvas())
-    .then((canvas) => {
-      canvas.width = 1920;
-      canvas.height = 1080;
+  tasks
+    .add(getCanvas())
+    .then(setupRendering);
 
-      const ctx = canvas.getContext('2d');
-
-      function render() {
-        requestAnimationFrame(render);
-
-        //const renderer = renderers[(frameCount / 100 | 0) % renderers.length];
-
-        renderer.setFrame(frameAdvancer.getFrame());
-
-        try {
-          renderer.render();
-
-          blender.beforeDraw(ctx);
-
-          ctx.drawImage(
-            renderer.canvas,
-            0, 0, renderer.canvas.width, renderer.canvas.width * 1080 / 1920,
-            0, 0, canvas.width, canvas.height
-          );
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      render();
-    });
-
-  let renderer = createRuntime({ src: renderProgress.toString().split("'--marker--';")[1] });
-  let frameAdvancer = progressFrameAdvancer;
-  let blender = overwriteBlender;
-
-  let dweetRenderers = [];
+  tasks
+    .add(fetchAudio(audioUrl))
+    .then(setupAudio);
 
   dweetIds
     // .sort(function () { return Math.random() - 0.5; })
     // .slice(0, 3)
-    .forEach((id, idx) => tasks.add(fetchDweet(id, idx)).then((renderer) => dweetRenderers.push(renderer)));
-
-  const audioCtx = new AudioContext();
-
-  tasks.add(fetchAudio(audioUrl, audioCtx))
-    .then(() => {
-
-    });
+    .forEach((id, idx) => tasks
+      .add(fetchDweet(id, idx))
+      .then((renderer) => dweetRenderers.push(renderer))
+    );
 
   tasks.whenDone()
     .then(() => pause(1000))

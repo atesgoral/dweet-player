@@ -169,12 +169,20 @@
     }
   };
 
-  getCanvas()
-    .then((canvas) => {
-      let renderer = createRuntime({ src: renderProgress.toString().split("'--marker--';")[1] });
-      let frameAdvancer = progressFrameAdvancer;
-      let blender = overwriteBlender;
+  let total = 0;
+  let pending = 0;
 
+  function progress() {
+    progressFrameAdvancer.updateProgress(--pending, total);
+    return arguments[0];
+  }
+
+  total++;
+  pending++;
+
+  const canvasWait = getCanvas()
+    .then(progress)
+    .then((canvas) => {
       canvas.width = 1920;
       canvas.height = 1080;
 
@@ -203,57 +211,54 @@
       }
 
       render();
+    });
 
-      let dweetRenderers = [];
-      let total = 0;
-      let pending = 0;
+  let renderer = createRuntime({ src: renderProgress.toString().split("'--marker--';")[1] });
+  let frameAdvancer = progressFrameAdvancer;
+  let blender = overwriteBlender;
 
-      function progress() {
-        progressFrameAdvancer.updateProgress(--pending, total);
-        return arguments[0];
-      }
+  let dweetRenderers = [];
 
-      const dweetFetches = dweetIds
-        // .sort(function () { return Math.random() - 0.5; })
-        // .slice(0, 3)
-        .map((id, idx) => {
-          total++;
-          pending++;
-
-          return fetchDweet(id, idx)
-            .then(progress)
-            .then((dweetRenderer) => dweetRenderers.push(dweetRenderer))
-        });
-
-      const audioCtx = new AudioContext();
-
+  const dweetFetches = dweetIds
+    // .sort(function () { return Math.random() - 0.5; })
+    // .slice(0, 3)
+    .map((id, idx) => {
       total++;
       pending++;
 
-      const audioFetch = fetchAudio(audioUrl, audioCtx)
+      return fetchDweet(id, idx)
         .then(progress)
-        .then(() => {
+        .then((dweetRenderer) => dweetRenderers.push(dweetRenderer))
+    });
 
-        });
+  const audioCtx = new AudioContext();
 
-      Promise.all(dweetFetches.concat(audioFetch))
-        .then(() => pause(1000))
-        .then(() => {
-          let dweetIdx = 0;
+  total++;
+  pending++;
 
-          frameAdvancer = monotonousFrameAdvancer;
-          renderer = dweetRenderers[dweetIdx];
-          setDweetInfo(renderer.id, renderer.user);
-          blender = fadeOutToWhiteBlender.reset();
+  const audioFetch = fetchAudio(audioUrl, audioCtx)
+    .then(progress)
+    .then(() => {
 
-          setInterval(() => {
-            dweetIdx = (dweetIdx + 1) % dweetRenderers.length;
-            frameAdvancer = sineFrameAdvancer;
-            renderer = dweetRenderers[dweetIdx];
-            setDweetInfo(renderer.id, renderer.user);
-            // blender = fadeBlender.reset();
-            blender = overwriteBlender;
-          }, 5000);
-        });
+    });
+
+  Promise.all(dweetFetches.concat(audioFetch))
+    .then(() => pause(1000))
+    .then(() => {
+      let dweetIdx = 0;
+
+      frameAdvancer = monotonousFrameAdvancer;
+      renderer = dweetRenderers[dweetIdx];
+      setDweetInfo(renderer.id, renderer.user);
+      blender = fadeOutToWhiteBlender.reset();
+
+      setInterval(() => {
+        dweetIdx = (dweetIdx + 1) % dweetRenderers.length;
+        frameAdvancer = sineFrameAdvancer;
+        renderer = dweetRenderers[dweetIdx];
+        setDweetInfo(renderer.id, renderer.user);
+        // blender = fadeBlender.reset();
+        blender = overwriteBlender;
+      }, 5000);
     });
 })();

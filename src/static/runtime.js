@@ -7,6 +7,18 @@
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  function getCanvas() {
+    return new Promise((resolve) => $(() => resolve($("#c").get(0))));
+  }
+
+  function setStatus(tpl, params) {
+    $('#status').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
+  }
+
+  function setDweetInfo(id, user) {
+    setStatus($('#dweet-info-tpl').html(), { id, user });
+  }
+
   const dweetCache = {
     '701': { id: 701, user: 'sigveseb', src: '(F=Z=>{for(x.fillStyle=R(W=1/Z*4e3,W/2,W/4),i=Z*Z*2;n=i%Z,m=i/Z|0,i--;n%2^m%2&&x.fillRect((n-t%2-1)*W,(S(t)+m-1)*W,W,W));Z&&F(Z-6)})(36)//rm' },
     '888': { id: 888, user: 'jczimm', src: 'c.width=1920;for(i=0;i<300;i++)for(j=0;j<6;j++){x.fillRect(960+200*C(i)*S(T(t\/1.1)+j\/i),540+200*S(i),10,10)}' },
@@ -157,10 +169,6 @@
     }
   };
 
-  function getCanvas() {
-    return new Promise((resolve) => $(() => resolve($("#c").get(0))));
-  }
-
   getCanvas()
     .then((canvas) => {
       let renderer = createRuntime({ src: renderProgress.toString().split("'--marker--';")[1] });
@@ -192,14 +200,6 @@
         } catch (e) {
           console.error(e);
         }
-      }
-
-      function setStatus(tpl, params) {
-        $('#status').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
-      }
-
-      function setDweetInfo(id, user) {
-        setStatus($('#dweet-info-tpl').html(), { id, user });
       }
 
       render();

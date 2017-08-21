@@ -296,8 +296,13 @@
   }
 
   function setActiveDweet(idx) {
-    dweet = dweets[idx];
+    dweetIdx = idx;
+    dweet = dweets[dweetIdx];
     setDweetInfo(dweet.id, dweet.user);
+  }
+
+  function moveToNextDweet() {
+    setActiveDweet((dweetIdx + 1) % dweets.length);
   }
 
   const tasks = (() => {
@@ -343,15 +348,14 @@
   tasks.whenDone()
     .then(() => pause(2000))
     .then(() => {
+      setActiveDweet(0);
       frameAdvancer = monotonousFrameAdvancer;
-      setActiveDweet(dweetIdx);
       blender = fadeOutToWhiteBlender.reset();
 
       setInterval(() => {
-        dweetIdx = (dweetIdx + 1) % dweets.length;
-        frameAdvancer = sineFrameAdvancer;
-        setActiveDweet(dweetIdx);
-        // blender = fadeBlender.reset();
+        moveToNextDweet();
+        //frameAdvancer = sineFrameAdvancer;
+        //blender = fadeBlender.reset();
         blender = zoomToBeatBlender;
       }, 5000);
     });

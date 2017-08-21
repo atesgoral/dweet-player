@@ -189,18 +189,12 @@
     }
   };
 
-  const progressRendererDweet = () => {
-    '--marker--';
-    x.clearRect(0, 0, c.width, c.height);
-    x.beginPath();
-    x.arc(c.width / 2, c.height / 2, c.height / 3, 0, 2 * Math.PI * -t, true);
-    x.lineCap = 'round';
-    x.lineWidth = c.height / 20 * (1 - t);
-    x.stroke();
-    '--marker--';
-  }
+  let dweet = createRuntime({
+    id: 0,
+    author: 'magna',
+    src: "x.clearRect(0,0,S=c.width,C=c.height);x.beginPath();x.arc(S/2,C/2,C/3,0,6.28*-t,1);x.lineCap='round';x.lineWidth=C/20*(1-t);x.stroke();"
+  });
 
-  let dweet = createRuntime({ src: progressRendererDweet.toString().split("'--marker--';")[1] });
   let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
 
@@ -220,7 +214,11 @@
   }
 
   function showDweetInfo(dweet) {
-    setStatus($('#dweet-info-tpl').html(), dweet);
+    const props = Object.assign({
+      length: dweet.src.length
+    }, dweet);
+
+    setStatus($('#dweet-info-tpl').html(), props);
   }
 
   function setupRendering(canvas) {
@@ -384,9 +382,7 @@
   function setActiveDweet(idx) {
     dweetIdx = idx;
     dweet = dweets[dweetIdx];
-    showDweetInfo(Object.assign({
-      length: dweet.src.length
-    }, dweet));
+    showDweetInfo(dweet);
   }
 
   function advanceToNextDweet() {
@@ -418,6 +414,7 @@
   tasks
     .add(getCanvas())
     .then(setupRendering);
+    // .then(() => showDweetInfo(dweet));
 
   tasks
     .add(fetchAudio(audioUrl))
@@ -436,7 +433,7 @@
     .then(() => {
       startAudio();
       setActiveDweet(0);
-      // frameAdvancer = monotonousFrameAdvancer;
+      //frameAdvancer = monotonousFrameAdvancer;
       frameAdvancer = beatConsciousFrameAdvancer
       blender = fadeOutToWhiteBlender.reset();
 
@@ -444,9 +441,9 @@
     })
     .then(() => {
       advanceToNextDweet();
-      blender = overwriteBlender;
-      // blender = zoomToBeatBlender;
-      // blender = flashToBeatBlender;
+      //blender = overwriteBlender;
+      //blender = zoomToBeatBlender;
+      blender = flashToBeatBlender;
       // blender = horizontalMirrorBlender
       beatConcsciousDweetAdvancer.waitBy(4000);
     });

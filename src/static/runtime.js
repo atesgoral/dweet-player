@@ -61,10 +61,11 @@
 
   const renderProgress = () => {
     '--marker--';
+    x.clearRect(0, 0, c.width, c.height);
     x.beginPath();
     x.arc(c.width / 2, c.height / 2, c.height / 3, 0, 2 * Math.PI * -t, true);
     x.lineCap = 'round';
-    x.lineWidth = c.height / 20;
+    x.lineWidth = c.height / 20 * (1 - t);
     x.stroke();
     '--marker--';
   }

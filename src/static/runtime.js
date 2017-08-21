@@ -6,7 +6,6 @@
   // @todo pass in as arg to IIFE
   function createRuntime() {
     var $ = undefined; // Hide jQuery
-    console.log(arguments[0].src);
 
     var c = document.createElement('canvas');
 

@@ -114,7 +114,7 @@
     '--marker--';
   }
 
-  let renderer = createRuntime({ src: progressRendererDweet.toString().split("'--marker--';")[1] });
+  let dweet = createRuntime({ src: progressRendererDweet.toString().split("'--marker--';")[1] });
   let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
 
@@ -145,12 +145,12 @@
     function render() {
       requestAnimationFrame(render);
 
-      //const renderer = renderers[(frameCount / 100 | 0) % renderers.length];
+      //const dweet = dweets[(frameCount / 100 | 0) % dweets.length];
 
-      renderer.setFrame(frameAdvancer.getFrame());
+      dweet.setFrame(frameAdvancer.getFrame());
 
       try {
-        renderer.render();
+        dweet.render();
       } catch (e) {
         console.error(e);
         return;
@@ -159,8 +159,8 @@
       blender.beforeDraw(ctx);
 
       ctx.drawImage(
-        renderer.canvas,
-        0, 0, renderer.canvas.width, renderer.canvas.width * 1080 / 1920,
+        dweet.canvas,
+        0, 0, dweet.canvas.width, dweet.canvas.width * 1080 / 1920,
         0, 0, canvas.width, canvas.height
       );
 
@@ -295,8 +295,8 @@
   }
 
   function setActiveDweet(idx) {
-    renderer = dweets[idx];
-    setDweetInfo(renderer.id, renderer.user);
+    dweet = dweets[idx];
+    setDweetInfo(dweet.id, dweet.user);
   }
 
   const tasks = (() => {

@@ -365,9 +365,9 @@
   dweetIds
     // .sort(function () { return Math.random() - 0.5; })
     // .slice(0, 3)
-    .forEach((id) => tasks
+    .forEach((id, idx) => tasks
       .add(fetchDweet(id))
-      .then((dweet) => dweets.push(dweet))
+      .then((dweet) => dweets[idx] = dweet)
     );
 
   tasks.whenDone()

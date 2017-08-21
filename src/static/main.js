@@ -7,10 +7,38 @@
     '933': { id: 933, author: 'p01', src: 'for(d=2e3;d--;x.fillRect(960+d*C(a),540+d*S(a),24,24))a=Math.random()*6.3,x.fillStyle=R(e=255*C(t-1e3\/d*S(t-a-C(a*99\/d))),99*S(a-e\/d),6e4\/d)' }
   };
 
-  //const dweetIds = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
-  const dweetIds = [ 701, 888, 1231, 739, 933 ];
+  //const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
+  const defaultTimeline = [ 701, 888, 1231, 739, 933 ];
   // const audioUrl = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/9473/new_year_dubstep_minimix.ogg';
   const audioUrl = 'new_year_dubstep_minimix.ogg';
+
+  function decodeTimeline(s) {
+    const tokens = /^v(.+):(.+)$/.exec(s);
+
+    if (!tokens) {
+      return null;
+    }
+
+    const version = tokens[1];
+    const ids = tokens[2];
+
+    if (version !== '1') {
+      return null;
+    }
+
+    return ids.split(',').map((s) => parseInt(s, 10));
+  }
+
+  function encodeTimeline(s) {
+    return 'v1:' + s.join(',');
+  }
+
+  const dweetIds = location.search
+    && decodeTimeline(location.search.slice(1))
+    || defaultTimeline;
+
+  const url = location.href.split('?').slice(0, 1).concat(encodeTimeline(dweetIds)).join('?');
+  history.replaceState({}, '', url);
 
   /* Frame advancers */
 

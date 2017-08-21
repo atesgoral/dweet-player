@@ -64,13 +64,12 @@
     }
   };
 
-  const sineFrameAdvancer = {
-    a: 0,
+  const beatConsciousFrameAdvancer = {
     frame: 0,
     getFrame: function () {
       const frame = this.frame;
 
-      this.frame += Math.sin(this.a += 0.01);
+      this.frame += 1 - beat * 4;
 
       return frame;
     }
@@ -437,14 +436,16 @@
     .then(() => {
       startAudio();
       setActiveDweet(0);
-      frameAdvancer = monotonousFrameAdvancer;
+      // frameAdvancer = monotonousFrameAdvancer;
+      frameAdvancer = beatConsciousFrameAdvancer
       blender = fadeOutToWhiteBlender.reset();
 
       return pause(5000);
     })
     .then(() => {
       advanceToNextDweet();
-      blender = zoomToBeatBlender;
+      blender = overwriteBlender;
+      // blender = zoomToBeatBlender;
       // blender = flashToBeatBlender;
       // blender = horizontalMirrorBlender
       beatConcsciousDweetAdvancer.waitBy(4000);

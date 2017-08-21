@@ -322,7 +322,9 @@
   function setActiveDweet(idx) {
     dweetIdx = idx;
     dweet = dweets[dweetIdx];
-    showDweetInfo(dweet);
+    showDweetInfo(Object.assign({
+      length: dweet.src.length
+    }, dweet));
   }
 
   function advanceToNextDweet() {

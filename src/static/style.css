@@ -2,35 +2,85 @@ body {
   background: #eee;
   margin: 0;
   padding: 0;
+  color: #666;
+  /* zoom: 200%; */
+}
+
+body, button {
   font-family: 'Varela Round', sans-serif;
   font-size: 100%;
-  color: #666;
-  zoom: 200%;
 }
 
 a {
   text-decoration: none;
   color: #000;
+  outline: none;
+}
+
+a:focus {
+  color: #08f;
+}
+
+button {
+  background: transparent;
+  border: 1px solid #888;
+  border-radius: 1rem;
+  cursor: pointer;
+  margin: 0;
+  padding: 0 0.5rem;
+  outline: none;
+  text-transform: uppercase;
+  font-size: .75rem;
+  line-height: 1.25rem;
+}
+
+#toggle-theme, #full-screen {
+  float: right;
+  margin-left: 0.25rem;
+}
+
+button:focus {
+  border-color: #08f;
+  color: #08f;
+}
+
+button:hover {
+  background: #fff;
 }
 
 a:hover {
   text-decoration: underline;
 }
 
-#container {
+header, section {
   width: 568px;
   margin: 0 auto;
+}
+
+header {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  line-height: 2rem;
+  font-size: 0.75rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 1rem 0 0;
+  float: left;
+  line-height: 2rem;
+}
+
+#container {
   height: 319.5px;
   border: 1px solid #ccc;
   overflow: hidden;
   background: white;
-  margin-top: 1rem;
+  margin-top: 3rem;
 }
 
 #status {
-  width: 568px;
-  margin: 0 auto;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
 }
 
 #status pre {
@@ -38,6 +88,7 @@ a:hover {
   word-break: break-all;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+  font-size: 1rem;
 }
 
 #c {

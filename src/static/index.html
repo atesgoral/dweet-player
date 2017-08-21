@@ -2,22 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Dweet Player</title>
+  <title>dweet player</title>
   <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script
     src="https://code.jquery.com/jquery-3.2.1.min.js"
     integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
     crossorigin="anonymous"></script>
+  <script src="runtime.js"></script>
 </head>
 <body>
-  <div id="container">
-    <canvas id="c"></canvas>
-  </div>
-  <div id="status">Loading&hellip;</div>
-  <script src="runtime.js"></script>
+  <header>
+    <h1>dweet player</h1>
+    by <a href="http://magnetiq.com">Ates Goral</a> aka <a href="https://www.dwitter.net/u/magna">magna</a> &middot;
+    <a href="https://github.com/atesgoral/dweet-player">fork on GitHub</a> &middot;
+    <a href="https://www.dwitter.net">Dwitter</a>
+  </header>
+  <section>
+    <div id="container">
+      <canvas id="c"></canvas>
+    </div>
+    <div id="status">Loading&hellip;</div>
+  </section>
   <script type="text/html" id="dweet-info-tpl">
-    <a href="https://www.dwitter.net/d/${id}">#${id}</a> by <a href="https://www.dwitter.net/u/${author}">${author}</a>
+    <a href="https://www.dwitter.net/d/${id}">#${id}</a> by <a href="https://www.dwitter.net/u/${author}">${author}</a> &middot;
+    ${length}/140
+    <!--button id="full-screen">full screen</button>
+    <button id="toggle-theme">toggle theme</button-->
     <pre>${src}</pre>
   </script>
 </body>

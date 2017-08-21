@@ -206,10 +206,12 @@
     return new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
   }
 
+  let source = null;
+
   function setupAudio(data) {
     const ctx = new AudioContext();
 
-    const source = ctx.createBufferSource();
+    source = ctx.createBufferSource();
 
     source.loop = true;
 
@@ -251,10 +253,11 @@
     source.connect(ctx.destination);
 
     return decodeAudio(data, ctx)
-      .then((buffer) => {
-        source.buffer = buffer;
-        source.start();
-      });
+      .then((buffer) => source.buffer = buffer);
+  }
+
+  function startAudio() {
+    source.start();
   }
 
   function fetchDweet(id) {
@@ -374,6 +377,7 @@
   tasks.whenDone()
     .then(() => pause(2000))
     .then(() => {
+      startAudio();
       setActiveDweet(0);
       frameAdvancer = monotonousFrameAdvancer;
       blender = fadeOutToWhiteBlender.reset();

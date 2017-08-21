@@ -2,8 +2,7 @@ body {
   background: #eee;
   margin: 0;
   padding: 0;
-  color: #666;
-  /* zoom: 200%; */
+  color: #888;
 }
 
 body, button {
@@ -13,12 +12,33 @@ body, button {
 
 a {
   text-decoration: none;
-  color: #000;
+  color: #333;
   outline: none;
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+  transition: color 250ms;
 }
 
-a:focus {
-  color: #08f;
+a:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: 0.666em;
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  background: transparent;
+  transition: background-color 250ms;
+}
+
+a:hover {
+  color: #06c;
+}
+
+a:hover:after, a:focus:after {
+  background: #08f;
 }
 
 button {
@@ -46,10 +66,6 @@ button:focus {
 
 button:hover {
   background: #fff;
-}
-
-a:hover {
-  text-decoration: underline;
 }
 
 header, section {

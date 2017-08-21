@@ -24,7 +24,7 @@ function createRuntime() {
 
   return Object.assign(arguments[0], {
     canvas: c,
-    setFrame: function (f) {
+    setFrame: (f) => {
       frame = f;
       time = frame / 60;
 
@@ -32,13 +32,11 @@ function createRuntime() {
         time += 0.000001;
       }
     },
-    render: function () {
-      u(time);
-    }
+    render: () =>u(time)
   });
 }
 
-const renderProgress = function u(t) {
+const renderProgress = () => {
   '--marker--';
   x.beginPath();
   x.arc(c.width / 2, c.height / 2, c.height / 3, 0, 2 * Math.PI * -t, true);
@@ -118,7 +116,7 @@ const fadeBlender = {
   }
 };
 
-$(function () {
+$(() => {
   let renderer = createRuntime({ src: renderProgress.toString().split("'--marker--';")[1] });
   let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
@@ -189,9 +187,9 @@ $(function () {
     { id: 933, user: 'p01', src: 'for(d=2e3;d--;x.fillRect(960+d*C(a),540+d*S(a),24,24))a=Math.random()*6.3,x.fillStyle=R(e=255*C(t-1e3\/d*S(t-a-C(a*99\/d))),99*S(a-e\/d),6e4\/d)' }
   ];
 
-  const fetches = hardCodedDweets.map(function (dweet, i) {
-    return new Promise(function (resolve) {
-      setTimeout(function () {
+  const fetches = hardCodedDweets.map((dweet, i) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
         resolve(dweet);
       }, 100 * i);
     })
@@ -202,10 +200,10 @@ $(function () {
   pending = fetches.length;
 
   Promise.all(fetches)
-    .then(function (_dweetRenderers) {
+    .then((_dweetRenderers) => {
       dweetRenderers = _dweetRenderers;
 
-      setTimeout(function () {
+      setTimeout(() => {
         let dweetIdx = 0;
 
         frameAdvancer = monotonousFrameAdvancer;
@@ -213,7 +211,7 @@ $(function () {
         setDweetInfo(renderer.id, renderer.user);
         blender = fadeOutToWhiteBlender.reset();
 
-        setInterval(function () {
+        setInterval(() => {
           dweetIdx = (dweetIdx + 1) % dweetRenderers.length;
           frameAdvancer = sineFrameAdvancer;
           renderer = dweetRenderers[dweetIdx];

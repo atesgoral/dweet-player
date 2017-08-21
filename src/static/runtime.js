@@ -145,8 +145,6 @@
     function render() {
       requestAnimationFrame(render);
 
-      //const dweet = dweets[(frameCount / 100 | 0) % dweets.length];
-
       dweet.setFrame(frameAdvancer.getFrame());
 
       try {
@@ -158,9 +156,11 @@
 
       blender.beforeDraw(ctx);
 
+      const dc = dweet.canvas;
+
       ctx.drawImage(
-        dweet.canvas,
-        0, 0, dweet.canvas.width, dweet.canvas.width * 1080 / 1920,
+        dc,
+        0, 0, dc.width, dc.width * 1080 / 1920,
         0, 0, canvas.width, canvas.height
       );
 

@@ -45,10 +45,33 @@
     }
   };
 
+  /* Dweet advancers */
+
+  const beatConcsciousDweetAdvancer = {
+    waitTime: null,
+    lastAdvanceTime: null,
+    waitBy: function (time) {
+      this.waitTime = time;
+      this.lastAdvanceTime = Date.now();
+    },
+    beat: function () {
+      if (!this.waitTime) {
+        return;
+      }
+
+      const now = Date.now();
+
+      if (now - this.lastAdvanceTime >= this.waitTime) {
+        advanceToNextDweet();
+        this.lastAdvanceTime = now;
+      }
+    }
+  };
+
   let beat = 0;
 
   function beatHandler() {
-
+    beatConcsciousDweetAdvancer.beat();
   }
 
   /* Blenders */
@@ -301,7 +324,7 @@
     setDweetInfo(dweet.id, dweet.user);
   }
 
-  function moveToNextDweet() {
+  function advanceToNextDweet() {
     setActiveDweet((dweetIdx + 1) % dweets.length);
   }
 
@@ -352,11 +375,11 @@
       frameAdvancer = monotonousFrameAdvancer;
       blender = fadeOutToWhiteBlender.reset();
 
-      setInterval(() => {
-        moveToNextDweet();
-        //frameAdvancer = sineFrameAdvancer;
-        //blender = fadeBlender.reset();
-        blender = zoomToBeatBlender;
-      }, 5000);
+      return pause(5000);
+    })
+    .then(() => {
+      advanceToNextDweet();
+      blender = zoomToBeatBlender;
+      beatConcsciousDweetAdvancer.waitBy(5000);
     });
 })();

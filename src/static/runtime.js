@@ -1,4 +1,9 @@
 (() => {
+  function pause(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // @todo pass in as arg to IIFE
   function createRuntime() {
     var $ = undefined; // Hide jQuery
     console.log(arguments[0].src);
@@ -190,13 +195,10 @@
     ];
 
     const fetches = hardCodedDweets.map((dweet, i) => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(dweet);
-        }, 100 * i);
-      })
-      .then(createRuntime)
-      .then(progress);
+      return pause(100 * i)
+        .then(() => dweet)
+        .then(createRuntime)
+        .then(progress);
     });
 
     pending = fetches.length;
@@ -204,24 +206,24 @@
     Promise.all(fetches)
       .then((_dweetRenderers) => {
         dweetRenderers = _dweetRenderers;
+      })
+      .then(() => pause(1000))
+      .then(() => {
+        let dweetIdx = 0;
 
-        setTimeout(() => {
-          let dweetIdx = 0;
+        frameAdvancer = monotonousFrameAdvancer;
+        renderer = dweetRenderers[dweetIdx];
+        setDweetInfo(renderer.id, renderer.user);
+        blender = fadeOutToWhiteBlender.reset();
 
-          frameAdvancer = monotonousFrameAdvancer;
+        setInterval(() => {
+          dweetIdx = (dweetIdx + 1) % dweetRenderers.length;
+          frameAdvancer = sineFrameAdvancer;
           renderer = dweetRenderers[dweetIdx];
           setDweetInfo(renderer.id, renderer.user);
-          blender = fadeOutToWhiteBlender.reset();
-
-          setInterval(() => {
-            dweetIdx = (dweetIdx + 1) % dweetRenderers.length;
-            frameAdvancer = sineFrameAdvancer;
-            renderer = dweetRenderers[dweetIdx];
-            setDweetInfo(renderer.id, renderer.user);
-            // blender = fadeBlender.reset();
-            blender = overwriteBlender;
-          }, 5000);
-        }, 1000);
+          // blender = fadeBlender.reset();
+          blender = overwriteBlender;
+        }, 5000);
       });
   });
 })();

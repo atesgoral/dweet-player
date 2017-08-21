@@ -7,9 +7,12 @@
     '933': { id: 933, author: 'p01', src: 'for(d=2e3;d--;x.fillRect(960+d*C(a),540+d*S(a),24,24))a=Math.random()*6.3,x.fillStyle=R(e=255*C(t-1e3\/d*S(t-a-C(a*99\/d))),99*S(a-e\/d),6e4\/d)' }
   };
 
-  //const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
+  // const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
   const defaultTimeline = [ 701, 888, 1231, 739, 933 ];
   // const audioUrl = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/9473/new_year_dubstep_minimix.ogg';
+  // const audioUrl = 'https://freemusicarchive.org/music/download/3c17225d6c3e1eba94e500061a306d3caa361595';
+  // const audioUrl = 'https://freemusicarchive.org/music/download/066da8204c2ea32c87b42fad98d9e84e6092fcf6';
+  // const audioUrl = 'https://freemusicarchive.org/music/download/6f657cb1e50850ad44db14c29b904b782eeaec45';
   const audioUrl = 'new_year_dubstep_minimix.ogg';
 
   function decodeTimeline(s) {
@@ -162,6 +165,31 @@
     }
   };
 
+  const horizontalMirrorBlender = {
+    beforeDraw: function (ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    },
+    draw: function (ctx, dc) {
+      const c = ctx.canvas;
+      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, 0, 0, c.width / 2, c.height);
+      ctx.scale(-1, 1);
+      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, -c.width / 2, 0, -c.width / 2, c.height);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+  };
+
+  const flashToBeatBlender = {
+    beforeDraw: function (ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    },
+    afterDraw: function (ctx) {
+      ctx.globalAlpha = beat;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.globalAlpha = 1;
+    }
+  };
+
   const progressRendererDweet = () => {
     '--marker--';
     x.clearRect(0, 0, c.width, c.height);
@@ -214,15 +242,19 @@
         return;
       }
 
-      blender.beforeDraw(ctx);
+      blender.beforeDraw && blender.beforeDraw(ctx);
 
       const dc = dweet.canvas;
 
-      ctx.drawImage(
-        dc,
-        0, 0, dc.width, dc.width * 1080 / 1920,
-        0, 0, canvas.width, canvas.height
-      );
+      if (blender.draw) {
+        blender.draw(ctx, dc)
+      } else {
+        ctx.drawImage(
+          dc,
+          0, 0, dc.width, dc.width * 1080 / 1920,
+          0, 0, canvas.width, canvas.height
+        );
+      }
 
       blender.afterDraw && blender.afterDraw(ctx);
     }
@@ -413,6 +445,8 @@
     .then(() => {
       advanceToNextDweet();
       blender = zoomToBeatBlender;
+      // blender = flashToBeatBlender;
+      // blender = horizontalMirrorBlender
       beatConcsciousDweetAdvancer.waitBy(4000);
     });
 })();

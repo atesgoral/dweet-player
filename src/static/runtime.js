@@ -1,6 +1,7 @@
 (() => {
   // const dweetIds = [ 701, 888, 1231, 739, 933, 676, 855, 683, 1829, 697, 433, 135 ];
   const dweetIds = [ 701, 888, 1231, 739, 933 ];
+  //const audioUrl = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/9473/new_year_dubstep_minimix.ogg';
   const audioUrl = 'new_year_dubstep_minimix.ogg';
 
   /* Frame advancers */
@@ -36,11 +37,12 @@
     }
   };
 
+  let beat = 0;
+
   /* Blenders */
 
   const overwriteBlender = {
     beforeDraw: function (ctx) {
-      ctx.globalAlpha = 1;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     }
   };
@@ -59,6 +61,9 @@
       if (this.opacity < 1) {
         this.opacity += 0.01;
       }
+    },
+    afterDraw: function (ctx) {
+      ctx.globalAlpha = 1;
     }
   };
 
@@ -74,6 +79,23 @@
       if (this.opacity < 1) {
         this.opacity += 0.01;
       }
+    },
+    afterDraw: function (ctx) {
+      ctx.globalAlpha = 1;
+    }
+  };
+
+  const zoomToBeatBlender = {
+    beforeDraw: function (ctx) {
+      const w = ctx.canvas.width;
+      const h = ctx.canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.translate(-w * beat / 4, -h * beat / 4);
+      ctx.scale(1 + beat / 2, 1 + beat / 2);
+    },
+    afterDraw: function (ctx) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
   };
 
@@ -125,17 +147,20 @@
 
       try {
         renderer.render();
-
-        blender.beforeDraw(ctx);
-
-        ctx.drawImage(
-          renderer.canvas,
-          0, 0, renderer.canvas.width, renderer.canvas.width * 1080 / 1920,
-          0, 0, canvas.width, canvas.height
-        );
       } catch (e) {
         console.error(e);
+        return;
       }
+
+      blender.beforeDraw(ctx);
+
+      ctx.drawImage(
+        renderer.canvas,
+        0, 0, renderer.canvas.width, renderer.canvas.width * 1080 / 1920,
+        0, 0, canvas.width, canvas.height
+      );
+
+      blender.afterDraw && blender.afterDraw(ctx);
     }
 
     render();
@@ -150,6 +175,8 @@
 
     const source = ctx.createBufferSource();
 
+    source.loop = true;
+
     const processor = ctx.createScriptProcessor(2048, 1, 1);
 
     const analyser = ctx.createAnalyser();
@@ -160,8 +187,6 @@
     analyser.connect(processor);
 
     const bins = new Uint8Array(analyser.frequencyBinCount);
-
-    let beat = 0;
 
     let prevAvg = 0;
 
@@ -305,7 +330,7 @@
     );
 
   tasks.whenDone()
-    .then(() => pause(1000))
+    .then(() => pause(2000))
     .then(() => {
       let dweetIdx = 0;
 
@@ -320,7 +345,7 @@
         renderer = dweetRenderers[dweetIdx];
         setDweetInfo(renderer.id, renderer.user);
         // blender = fadeBlender.reset();
-        blender = overwriteBlender;
+        blender = zoomToBeatBlender;
       }, 5000);
     });
 })();

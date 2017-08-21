@@ -11,6 +11,16 @@
     '933': { id: 933, user: 'p01', src: 'for(d=2e3;d--;x.fillRect(960+d*C(a),540+d*S(a),24,24))a=Math.random()*6.3,x.fillStyle=R(e=255*C(t-1e3\/d*S(t-a-C(a*99\/d))),99*S(a-e\/d),6e4\/d)' }
   };
 
+  function fetchDweet(id, idx) { // @todo idx only needed for fake progress
+    const cached = dweetCache[id];
+    const fetch = cached
+      ? pause(100 * idx).then(() => cached)
+      : $.ajax(`/api/dweets/${id}`, { dataType: 'json' });
+
+    return fetch
+      .then(createRuntime);
+  }
+
   // @todo pass in as arg to IIFE
   function createRuntime() {
     var $ = undefined; // Hide jQuery
@@ -192,16 +202,10 @@
         // .sort(function () { return Math.random() - 0.5; })
         // .slice(0, 3)
         .map((id, idx) => {
-          const cached = dweetCache[id];
-          const fetch = cached
-            ? pause(100 * idx).then(() => cached)
-            : $.ajax(`/api/dweets/${id}`, { dataType: 'json' });
-
           total++;
           pending++;
 
-          return fetch
-            .then(createRuntime)
+          return fetchDweet(id, idx)
             .then(progress);
         });
 

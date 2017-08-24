@@ -36,7 +36,7 @@ app.get('/api/dweets/:id', (req, res, next) => {
 
 app.use(express.static('./src/static'));
 
-const port = parseInt(process.env.port || 7890, 10);
+const port = parseInt(process.env.PORT || 7890, 10);
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);

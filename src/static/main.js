@@ -190,9 +190,12 @@
   };
 
   let dweet = createRuntime({
-    id: 0,
+    // id: 3096,
+    // author: 'magna',
+    // src: "x.clearRect(0,0,S=c.width,C=c.height);x.beginPath();x.arc(S/2,C/2,C/3,0,6.28*-t,1);x.lineCap='round';x.lineWidth=C/20*(1-t);x.stroke()"
+    id: 3097,
     author: 'magna',
-    src: "x.clearRect(0,0,S=c.width,C=c.height);x.beginPath();x.arc(S/2,C/2,C/3,0,6.28*-t,1);x.lineCap='round';x.lineWidth=C/20*(1-t);x.stroke();"
+    src: "w=c.width|=0;x.fillRect(0,0,w,w);x.clearRect(100,470,1720,140);x.fillRect(110,480,1700,120);x.clearRect(120,490,(t-(t|0))*1680,100)"
   });
 
   let frameAdvancer = progressFrameAdvancer;

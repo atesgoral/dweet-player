@@ -394,12 +394,12 @@
     ][Math.random() * 2 | 0];
 
     blender = [
-      //fadeOutToWhiteBlender.reset(),
+      fadeOutToWhiteBlender.reset(),
       overwriteBlender,
       zoomToBeatBlender,
       flashToBeatBlender,
       horizontalMirrorBlender
-    ][Math.random() * 4 | 0];
+    ][Math.random() * 5 | 0];
 
     setActiveDweet((dweetIdx + 1) % dweets.length);
   }
@@ -457,9 +457,9 @@
     .then(() => {
       advanceToNextDweet();
       //blender = overwriteBlender;
-      //blender = zoomToBeatBlender;
-      blender = flashToBeatBlender;
-      // blender = horizontalMirrorBlender
+      blender = zoomToBeatBlender;
+      //blender = flashToBeatBlender;
+      //blender = horizontalMirrorBlender
       beatConcsciousDweetAdvancer.waitBy(4000);
     });
 })();

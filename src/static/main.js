@@ -1,19 +1,15 @@
 (() => {
-  const dweetCache = {
-    '701': { id: 701, author: 'sigveseb', src: '(F=Z=>{for(x.fillStyle=R(W=1/Z*4e3,W/2,W/4),i=Z*Z*2;n=i%Z,m=i/Z|0,i--;n%2^m%2&&x.fillRect((n-t%2-1)*W,(S(t)+m-1)*W,W,W));Z&&F(Z-6)})(36)//rm' },
-    '888': { id: 888, author: 'jczimm', src: 'c.width=1920;for(i=0;i<300;i++)for(j=0;j<6;j++){x.fillRect(960+200*C(i)*S(T(t\/1.1)+j\/i),540+200*S(i),10,10)}' },
-    '1231': { id: 1231, author: 'iverjo', src: 'c.width^=0;for(i=9;i<2e3;i+=2)s=3\/(9.1-(t+i\/99)%9),x.beginPath(),j=i*7+S(i*4+t+S(t)),x.lineWidth=s*s,x.arc(960,540,s*49,j,j+.6),x.stroke()' },
-    '739': { id: 739, author: 'donbright', src: 'c.width=900;\u534A=450;for(i=0.0;i<360;i+=1){x.lineTo(\u534A+C(i*t\/10)*i,\u534A*9\/16+S(i*t\/10)*i)};x.stroke();' },
-    '933': { id: 933, author: 'p01', src: 'for(d=2e3;d--;x.fillRect(960+d*C(a),540+d*S(a),24,24))a=Math.random()*6.3,x.fillStyle=R(e=255*C(t-1e3\/d*S(t-a-C(a*99\/d))),99*S(a-e\/d),6e4\/d)' }
-  };
+  const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
 
-  // const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
-  const defaultTimeline = [ 701, 888, 1231, 739, 933 ];
-  // const audioUrl = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/9473/new_year_dubstep_minimix.ogg';
-  // const audioUrl = 'https://freemusicarchive.org/music/download/3c17225d6c3e1eba94e500061a306d3caa361595';
-  // const audioUrl = 'https://freemusicarchive.org/music/download/066da8204c2ea32c87b42fad98d9e84e6092fcf6';
-  // const audioUrl = 'https://freemusicarchive.org/music/download/6f657cb1e50850ad44db14c29b904b782eeaec45';
-  const audioUrl = 'new_year_dubstep_minimix.ogg';
+  const music = {
+    track: 'Memory',
+    artist: 'Creo',
+    audioUrl: 'Creo_-_Memory.mp3',
+    trackUrl: 'http://freemusicarchive.org/music/Creo/~/Memory_1520',
+    artistUrl: 'http://freemusicarchive.org/music/Creo/',
+    license: 'CC BY 4.0',
+    licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
+  };
 
   function decodeTimeline(s) {
     const tokens = /^v(.+):(.+)$/.exec(s);
@@ -212,16 +208,22 @@
     return new Promise((resolve) => $(() => resolve($("#c").get(0))));
   }
 
-  function setStatus(tpl, params) {
-    $('#status').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
+  function showMusicInfo(music) {
+    const tpl = $('#music-info-tpl').html();
+    const params = music;
+
+    $('#music-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
   }
 
   function showDweetInfo(dweet) {
-    const props = Object.assign({
+    const tpl = $('#dweet-info-tpl').html();
+    const params = Object.assign({
+      dweetUrl: `https://www.dwitter.net/d/${dweet.id}`,
+      authorUrl: `https://www.dwitter.net/u/${dweet.author}`,
       length: dweet.src.length
     }, dweet);
 
-    setStatus($('#dweet-info-tpl').html(), props);
+    $('#dweet-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
   }
 
   function setupRendering(canvas) {
@@ -321,13 +323,7 @@
   }
 
   function fetchDweet(id) {
-    const cached = dweetCache[id];
-
-    const fetch = cached
-      ? pause(3000 * Math.random()).then(() => cached)
-      : $.ajax(`/api/dweets/${id}`, { dataType: 'json' });
-
-    return fetch
+    return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
       .then(createRuntime);
   }
 
@@ -435,7 +431,7 @@
     // .then(() => showDweetInfo(dweet));
 
   tasks
-    .add(fetchAudio(audioUrl))
+    .add(fetchAudio(music.audioUrl))
     .then(setupAudio);
 
   dweetIds
@@ -449,6 +445,7 @@
   tasks.whenDone()
     .then(() => pause(1000))
     .then(() => {
+      showMusicInfo(music);
       startAudio();
       setActiveDweet(0);
       //frameAdvancer = monotonousFrameAdvancer;

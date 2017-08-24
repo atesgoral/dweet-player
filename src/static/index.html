@@ -19,13 +19,18 @@
     <a href="https://www.dwitter.net">Dwitter</a>
   </header>
   <section>
+    <div id="music-info">&nbsp;</div>
     <div id="container">
       <canvas id="c"></canvas>
     </div>
-    <div id="status">Loading&hellip;</div>
+    <div id="dweet-info"></div>
   </section>
+  <script type="text/html" id="music-info-tpl">
+    <a href="${trackUrl}">${track}</a> by <a href="${artistUrl}">${artist}</a> &middot;
+    <a href="${licenseUrl}">${license}</a>
+  </script>
   <script type="text/html" id="dweet-info-tpl">
-    <a href="https://www.dwitter.net/d/${id}">#${id}</a> by <a href="https://www.dwitter.net/u/${author}">${author}</a> &middot;
+    <a href="${dweetUrl}">#${id}</a> by <a href="${authorUrl}">${author}</a> &middot;
     ${length}/140
     <!--button id="full-screen">full screen</button>
     <button id="toggle-theme">toggle theme</button-->

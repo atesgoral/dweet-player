@@ -75,7 +75,6 @@ header, section {
 
 header {
   margin-top: 1rem;
-  margin-bottom: 2rem;
   line-height: 2rem;
   font-size: 0.75rem;
 }
@@ -91,14 +90,19 @@ h1 {
   height: 319.5px;
   overflow: hidden;
   background: white;
-  margin-top: 3rem;
-}
-
-#status {
   margin-top: 1rem;
 }
 
-#status pre {
+#music-info {
+  margin-top: 2rem;
+  font-size: 0.75rem;
+}
+
+#dweet-info {
+  margin-top: 1rem;
+}
+
+#dweet-info pre {
   margin: 1.5rem 0 0 0;
   word-break: break-all;
   white-space: pre-wrap;

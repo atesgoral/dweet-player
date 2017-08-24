@@ -386,6 +386,21 @@
   }
 
   function advanceToNextDweet() {
+    // Randomize for now
+
+    frameAdvancer = [
+      monotonousFrameAdvancer,
+      beatConsciousFrameAdvancer
+    ][Math.random() * 2 | 0];
+
+    blender = [
+      fadeOutToWhiteBlender.reset(),
+      overwriteBlender,
+      zoomToBeatBlender,
+      flashToBeatBlender,
+      horizontalMirrorBlender
+    ][Math.random() * 5 | 0];
+
     setActiveDweet((dweetIdx + 1) % dweets.length);
   }
 

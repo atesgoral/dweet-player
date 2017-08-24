@@ -1,4 +1,4 @@
-# dweet-player
+# dweet player
 
 Allows you to make multi-part demos out of [dweets](https://www.dwitter.net).
 

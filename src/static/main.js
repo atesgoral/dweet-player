@@ -1,19 +1,7 @@
 (() => {
   const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
 
-  const loaders = [{
-    id: 3096,
-    author: 'magna',
-    src: "x.clearRect(0,0,S=c.width,C=c.height);x.beginPath();x.arc(S/2,C/2,C/3,0,6.28*-t,1);x.lineCap='round';x.lineWidth=C/20*(1-t);x.stroke()"
-  }, {
-    id: 3097,
-    author: 'magna',
-    src: "w=c.width|=0;x.fillRect(0,0,w,w);x.clearRect(100,470,1720,140);x.fillRect(110,480,1700,120);x.clearRect(120,490,(t-(t|0))*1680,100)"
-  }, {
-    id: 3098,
-    author: 'magna',
-    src: "w=c.width|=0;r=x.clearRect.bind(x);x.fillRect(0,0,w,w);r(950+C(T=t*30)*70,490+S(T)*70,20,20);r(0,950,t*w,10);r(40,1e3,10,40)+r(60,1e3,10,40)"
-  }];
+  const loaders = [ 3096, 3097, 3098, 3115, 3110, 3114, 3108, 3109 ];
 
   const music = [{
     track: 'Memory',
@@ -207,7 +195,7 @@
     }
   };
 
-  let dweet = createRuntime(loaders[Math.random() * loaders.length | 0]);
+  let dweet = null;
 
   let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
@@ -440,41 +428,45 @@
     };
   })();
 
-  tasks
-    .add(getCanvas())
-    .then(setupRendering)
-    .then(() => showDweetInfo(dweet));
-
-  tasks
-    .add(fetchAudio(music.audioUrl))
-    .then(setupAudio);
-
-  dweetIds
-    // .sort(function () { return Math.random() - 0.5; })
-    // .slice(0, 3)
-    .forEach((id, idx) => tasks
-      .add(fetchDweet(id))
-      .then((dweet) => dweets[idx] = dweet)
-    );
-
-  tasks.whenDone()
-    .then(() => pause(1000))
+  fetchDweet(loaders[Math.random() * loaders.length | 0])
+    .then((loader) => dweet = createRuntime(loader))
     .then(() => {
-      showMusicInfo(music);
-      startAudio();
-      setActiveDweet(0);
-      //frameAdvancer = monotonousFrameAdvancer;
-      frameAdvancer = beatConsciousFrameAdvancer
-      blender = fadeOutToWhiteBlender.reset();
+      tasks
+        .add(getCanvas())
+        .then(setupRendering)
+        .then(() => showDweetInfo(dweet));
 
-      return pause(5000);
-    })
-    .then(() => {
-      advanceToNextDweet();
-      //blender = overwriteBlender;
-      blender = zoomToBeatBlender;
-      //blender = flashToBeatBlender;
-      //blender = horizontalMirrorBlender
-      beatConcsciousDweetAdvancer.waitBy(4000);
+      tasks
+        .add(fetchAudio(music.audioUrl))
+        .then(setupAudio);
+
+      dweetIds
+        // .sort(function () { return Math.random() - 0.5; })
+        // .slice(0, 3)
+        .forEach((id, idx) => tasks
+          .add(fetchDweet(id))
+          .then((dweet) => dweets[idx] = dweet)
+        );
+
+      tasks.whenDone()
+        .then(() => pause(1000))
+        .then(() => {
+          showMusicInfo(music);
+          startAudio();
+          setActiveDweet(0);
+          //frameAdvancer = monotonousFrameAdvancer;
+          frameAdvancer = beatConsciousFrameAdvancer
+          blender = fadeOutToWhiteBlender.reset();
+
+          return pause(5000);
+        })
+        .then(() => {
+          advanceToNextDweet();
+          //blender = overwriteBlender;
+          blender = zoomToBeatBlender;
+          //blender = flashToBeatBlender;
+          //blender = horizontalMirrorBlender
+          beatConcsciousDweetAdvancer.waitBy(4000);
+        });
     });
 })();

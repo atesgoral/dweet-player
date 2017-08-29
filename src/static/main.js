@@ -11,14 +11,14 @@
     artistUrl: 'http://freemusicarchive.org/music/Creo/',
     license: 'CC BY 4.0',
     licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
-  // }, {
-  //   track: 'San Diego Cruisin',
-  //   artist: 'Pierlo',
-  //   audioUrl: 'Pierlo_-_05_-_San_Diego_Cruisin.mp3',
-  //   trackUrl: 'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
-  //   artistUrl: 'http://freemusicarchive.org/music/Pierlo/',
-  //   license: 'CC BY 4.0',
-  //   licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
+  }, {
+    track: 'San Diego Cruisin',
+    artist: 'Pierlo',
+    audioUrl: 'Pierlo_-_05_-_San_Diego_Cruisin.mp3',
+    trackUrl: 'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
+    artistUrl: 'http://freemusicarchive.org/music/Pierlo/',
+    license: 'CC BY 4.0',
+    licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
   }][0];
 
   function decodeTimeline(s) {

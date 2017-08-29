@@ -19,7 +19,7 @@
     artistUrl: 'http://freemusicarchive.org/music/Pierlo/',
     license: 'CC BY 4.0',
     licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
-  }][0];
+  }][1];
 
   function decodeTimeline(s) {
     const tokens = /^v(.+):(.+)$/.exec(s);
@@ -262,6 +262,26 @@
       }
 
       blender.afterDraw && blender.afterDraw(ctx);
+
+      if (isBeatOverlayEnabled) {
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'orange';
+
+        const binW = canvas.width / gbins.length;
+        let binX = 0;
+
+        for (let i = 0; i < gbins.length; i++) {
+          binX = i * binW;
+          ctx.fillRect(binX, canvas.height / 2 - gbins[i], binW, gbins[i]);
+        }
+
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(0, canvas.height / 2 + 40 - beat * 10, canvas.width, beat * 20);
+        ctx.fillStyle = 'gray';
+        ctx.fillRect(0, canvas.height - gra * 2 - 1, canvas.width, 1);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(0, canvas.height - gavg * 2 - 1, canvas.width, 1);
+      }
     }
 
     render();
@@ -273,6 +293,12 @@
 
   let source = null;
 
+  const isBeatOverlayEnabled = false;
+  // @todo bad names: globals for beat overlay
+  let gra = 0;
+  let gavg = 0;
+  let gbins = [];
+
   function setupAudio(data) {
     const ctx = new AudioContext();
 
@@ -280,18 +306,29 @@
 
     source.loop = true;
 
+    // const filter = ctx.createBiquadFilter();
+
+    // filter.type = 'bandpass';
+    // filter.frequency.value = 180;
+    // filter.Q.value = 10;
+
     const processor = ctx.createScriptProcessor(2048, 1, 1);
 
     const analyser = ctx.createAnalyser();
     analyser.smoothingTimeConstant = 0.3;
     analyser.fftSize = 1024;
 
+    // source.connect(filter);
+    // filter.connect(analyser);
     source.connect(analyser);
     analyser.connect(processor);
 
     const bins = new Uint8Array(analyser.frequencyBinCount);
+    gbins = bins;
 
-    let prevAvg = 0;
+    const avgBuff = Array(4).fill(0);
+    let avgPos = 0;
+    let avgSum = 0;
 
     processor.onaudioprocess = () => {
       analyser.getByteFrequencyData(bins);
@@ -303,8 +340,20 @@
       }
 
       const avg = sum / bins.length;
+      const avgSqr = avg * avg;
 
-      if (avg - prevAvg > 25) {
+      avgBuff[avgPos] = avgSqr;
+
+      const nextPos = (avgPos + 1) % avgBuff.length;
+
+      avgSum += avgSqr - avgBuff[nextPos];
+      avgPos = nextPos;
+
+      const runningAvg = Math.sqrt(avgSum / avgBuff.length);
+      gra = runningAvg;
+      gavg = avg;
+
+      if (avg / (runningAvg + 0.00001) > 1.3) {
         beat = 1;
         beatHandler();
       } else {
@@ -314,8 +363,14 @@
       prevAvg = avg;
     };
 
+    const delay = ctx.createDelay();
+    delay.delayTime.value = 0.1;
+
     processor.connect(ctx.destination);
-    source.connect(ctx.destination);
+
+    source.connect(delay);
+    delay.connect(ctx.destination);
+    // filter.connect(ctx.destination);
 
     return decodeAudio(data, ctx)
       .then((buffer) => source.buffer = buffer);
@@ -462,8 +517,8 @@
         })
         .then(() => {
           advanceToNextDweet();
-          //blender = overwriteBlender;
-          blender = zoomToBeatBlender;
+          blender = overwriteBlender;
+          //blender = zoomToBeatBlender;
           //blender = flashToBeatBlender;
           //blender = horizontalMirrorBlender
           beatConcsciousDweetAdvancer.waitBy(4000);

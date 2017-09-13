@@ -75,7 +75,7 @@
     getFrame: function () {
       const frame = this.frame;
 
-      this.frame += 1 - beat * 4;
+      this.frame += 1 + beat * 4;
 
       return frame;
     }

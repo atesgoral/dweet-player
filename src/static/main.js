@@ -1,5 +1,5 @@
 (() => {
-  const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ];
+  const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ].map((dweetId) => ({ dweetId }));
 
   const loaders = [ 3096, 3097, 3098, 3115, 3110, 3114, 3108, 3109 ];
 
@@ -35,18 +35,22 @@
       return null;
     }
 
-    return ids.split(',').map((s) => parseInt(s, 10));
+    return ids.split(',').map((s) => {
+      return {
+        dweetId: parseInt(s, 10)
+      };
+    });
   }
 
-  function encodeTimeline(s) {
-    return 'v1:' + s.join(',');
+  function encodeTimeline(timeline) {
+    return 'v1:' + timeline.map((scene) => scene.dweetId).join(',');
   }
 
-  const dweetIds = location.search
+  const timeline = location.search
     && decodeTimeline(location.search.slice(1))
     || defaultTimeline;
 
-  const url = location.href.split('?').slice(0, 1).concat(encodeTimeline(dweetIds)).join('?');
+  const url = location.href.split('?').slice(0, 1).concat(encodeTimeline(timeline)).join('?');
   history.replaceState({}, '', url);
 
   /* Frame advancers */
@@ -495,11 +499,10 @@
         .add(fetchAudio(music.audioUrl))
         .then(setupAudio);
 
-      dweetIds
-        // .sort(function () { return Math.random() - 0.5; })
-        // .slice(0, 3)
-        .forEach((id, idx) => tasks
-          .add(fetchDweet(id))
+      // @todo find unique dweetIds
+      timeline
+        .forEach((scene, idx) => tasks
+          .add(fetchDweet(scene.dweetId))
           .then((dweet) => dweets[idx] = dweet)
         );
 

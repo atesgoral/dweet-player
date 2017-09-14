@@ -96,7 +96,7 @@
 
   /* Dweet advancers */
 
-  const beatConcsciousDweetAdvancer = {
+  const beatConcsciousSceneAdvancer = {
     waitTime: null,
     lastAdvanceTime: null,
     waitBy: function (time) {
@@ -111,7 +111,7 @@
       const now = Date.now();
 
       if (now - this.lastAdvanceTime >= this.waitTime) {
-        advanceToNextDweet();
+        advanceToNextScene();
         this.lastAdvanceTime = now;
       }
     }
@@ -120,7 +120,7 @@
   let beat = 0;
 
   function beatHandler() {
-    beatConcsciousDweetAdvancer.beat();
+    beatConcsciousSceneAdvancer.beat();
   }
 
   /* Blenders */
@@ -213,8 +213,9 @@
   let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
 
-  let dweets = [];
-  let dweetIdx = 0;
+  let dweets = {};
+  let sceneIdx = 0;
+  let scene = null;
 
   function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -449,13 +450,14 @@
     });
   }
 
-  function setActiveDweet(idx) {
-    dweetIdx = idx;
-    dweet = dweets[dweetIdx];
+  function setActiveScene(idx) {
+    sceneIdx = idx;
+    scene = timeline[idx];
+    dweet = dweets[scene.dweetId];
     showDweetInfo(dweet);
   }
 
-  function advanceToNextDweet() {
+  function advanceToNextScene() {
     // Randomize for now
 
     frameAdvancer = [
@@ -471,7 +473,7 @@
       horizontalMirrorBlender
     ][Math.random() * 5 | 0];
 
-    setActiveDweet((dweetIdx + 1) % dweets.length);
+    setActiveScene((sceneIdx + 1) % timeline.length);
   }
 
   const tasks = (() => {
@@ -511,7 +513,7 @@
       getUniqueDweetIdsFromTimeline(timeline)
         .forEach((dweetId, idx) => tasks
           .add(fetchDweet(dweetId))
-          .then((dweet) => dweets[idx] = dweet)
+          .then((dweet) => dweets[dweetId] = dweet)
         );
 
       tasks.whenDone()
@@ -519,7 +521,7 @@
         .then(() => {
           showMusicInfo(music);
           startAudio();
-          setActiveDweet(0);
+          setActiveScene(0);
           //frameAdvancer = monotonousFrameAdvancer;
           frameAdvancer = beatConsciousFrameAdvancer
           blender = fadeOutToWhiteBlender.reset();
@@ -527,12 +529,12 @@
           return pause(5000);
         })
         .then(() => {
-          advanceToNextDweet();
+          advanceToNextScene();
           blender = overwriteBlender;
           //blender = zoomToBeatBlender;
           //blender = flashToBeatBlender;
           //blender = horizontalMirrorBlender
-          beatConcsciousDweetAdvancer.waitBy(4000);
+          beatConcsciousSceneAdvancer.waitBy(4000);
         });
     });
 })();

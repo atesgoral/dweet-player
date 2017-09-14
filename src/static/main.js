@@ -50,6 +50,15 @@
     && decodeTimeline(location.search.slice(1))
     || defaultTimeline;
 
+  function getUniqueDweetIdsFromTimeline(timeline) {
+    return Object.keys(
+      timeline.reduce((idMap, scene) => {
+        idMap[scene.dweetId] = 1;
+        return idMap;
+      }, {})
+    );
+  }
+
   const url = location.href.split('?').slice(0, 1).concat(encodeTimeline(timeline)).join('?');
   history.replaceState({}, '', url);
 
@@ -499,10 +508,9 @@
         .add(fetchAudio(music.audioUrl))
         .then(setupAudio);
 
-      // @todo find unique dweetIds
-      timeline
-        .forEach((scene, idx) => tasks
-          .add(fetchDweet(scene.dweetId))
+      getUniqueDweetIdsFromTimeline(timeline)
+        .forEach((dweetId, idx) => tasks
+          .add(fetchDweet(dweetId))
           .then((dweet) => dweets[idx] = dweet)
         );
 

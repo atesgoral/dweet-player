@@ -453,26 +453,29 @@
   function setActiveScene(idx) {
     sceneIdx = idx;
     scene = timeline[idx];
+
+    blender = overwriteBlender;
+    //blender = zoomToBeatBlender;
+    //blender = flashToBeatBlender;
+    //blender = horizontalMirrorBlender
+
+    frameAdvancer = beatConsciousFrameAdvancer;
+    beatConcsciousSceneAdvancer.waitBy(4000);
+    // monotonousFrameAdvancer,
+    // beatConsciousFrameAdvancer
+
+    blender = overwriteBlender;
+    // fadeOutToWhiteBlender.reset(),
+    // overwriteBlender,
+    // zoomToBeatBlender,
+    // flashToBeatBlender,
+    // horizontalMirrorBlender
+
     dweet = dweets[scene.dweetId];
     showDweetInfo(dweet);
   }
 
   function advanceToNextScene() {
-    // Randomize for now
-
-    frameAdvancer = [
-      monotonousFrameAdvancer,
-      beatConsciousFrameAdvancer
-    ][Math.random() * 2 | 0];
-
-    blender = [
-      fadeOutToWhiteBlender.reset(),
-      overwriteBlender,
-      zoomToBeatBlender,
-      flashToBeatBlender,
-      horizontalMirrorBlender
-    ][Math.random() * 5 | 0];
-
     setActiveScene((sceneIdx + 1) % timeline.length);
   }
 
@@ -528,13 +531,6 @@
 
           return pause(5000);
         })
-        .then(() => {
-          advanceToNextScene();
-          blender = overwriteBlender;
-          //blender = zoomToBeatBlender;
-          //blender = flashToBeatBlender;
-          //blender = horizontalMirrorBlender
-          beatConcsciousSceneAdvancer.waitBy(4000);
-        });
+        .then(() => advanceToNextScene());
     });
 })();

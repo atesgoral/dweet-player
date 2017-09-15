@@ -43,15 +43,21 @@ a:hover:after, a:focus:after {
 
 button {
   background: transparent;
-  border: 1px solid #888;
-  border-radius: 1rem;
+  color: #888;
+  border: none;
   cursor: pointer;
   margin: 0;
-  padding: 0 0.5rem;
+  padding: 0;
   outline: none;
-  text-transform: uppercase;
-  font-size: .75rem;
-  line-height: 1.25rem;
+  text-transform: lowercase;
+}
+
+button span {
+  margin-right: 0.125rem;
+}
+
+#toggle-mute {
+  margin-right: 0.25rem;
 }
 
 #toggle-theme, #full-screen {
@@ -60,12 +66,11 @@ button {
 }
 
 button:focus {
-  border-color: #08f;
   color: #08f;
 }
 
 button:hover {
-  background: #fff;
+  color: #333;
 }
 
 header, section, footer {
@@ -81,7 +86,6 @@ header {
 
 footer {
   margin-top: 1rem;
-  line-height: 2rem;
   font-size: 0.75rem;
 }
 
@@ -123,4 +127,48 @@ h1 a:after {
 #c {
   width: 100%;
   background: white;
+}
+
+.speaker {
+  vertical-align: middle;
+  box-sizing: border-box;
+  display: inline-block;
+  background: currentColor;
+  background-clip: content-box;
+  width: 1em;
+  height: 1em;
+  border: .333em solid transparent;
+  border-right-color: currentColor;
+  position: relative;
+  left: -.337em;
+}
+.speaker.-on:before, .speaker.-on:after {
+  content: '';
+  background: currentColor;
+  width: .1em;
+  position: absolute;
+}
+.speaker.-on:before {
+  height: .333em;
+  right: -.533em;
+}
+.speaker.-on:after {
+  height: .667em;
+  right: -.733em;
+  top: -50%;
+}
+.speaker.-off:before, .speaker.-off:after {
+  content: '';
+  background: currentColor;
+  width: .1em;
+  position: absolute;
+  height: 1.2em;
+  margin-top: -.333em;
+  top: -.1em;
+  left: .1em;
+  transform: translateX(.333em) rotate(-45deg);
+}
+.speaker.-off:before {
+  background: #eee;
+  left: .2em;
 }

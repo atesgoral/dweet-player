@@ -1,7 +1,8 @@
 (() => {
   const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ].map((dweetId) => ({ dweetId }));
 
-  const loaders = [ 3096, 3097, 3098, 3115, 3110, 3114, 3108, 3109 ];
+  // const loaders = [ 3096, 3097, 3098, 3115, 3110, 3114, 3108, 3109 ];
+  const loaders = [ 3096, 3097, 3098 ];
 
   const music = [{
     track: 'Memory',

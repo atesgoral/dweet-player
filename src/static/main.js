@@ -406,8 +406,8 @@
     });
 
     $('#toggle-audio')
-      .on('click', (event) => {
-        $(event.target).toggleClass('-on -off');
+      .on('click', function () {
+        $(this).find('.icon.-speaker').toggleClass('-on -off');
         toggleAudio();
       });
 }

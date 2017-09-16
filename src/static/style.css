@@ -56,21 +56,20 @@ button.-with-icon {
   position: relative;
   text-indent: -9999px;
   overflow: hidden;
-  width: 1em;
-  height: 1em;
+  width: 1rem;
+  height: 1rem;
 }
 
 button span {
   margin-right: 0.125rem;
 }
 
-#toggle-mute {
-  margin-right: 0.25rem;
+header .button-bar {
+  text-align: right;
 }
 
-#toggle-theme, #full-screen {
-  float: right;
-  margin-left: 0.25rem;
+header .button-bar button {
+  margin-left: 0.5rem;
 }
 
 button:focus {
@@ -106,6 +105,10 @@ h1 {
   font-size: 1.5rem;
   margin: 0 1rem 0 0;
   line-height: 2rem;
+}
+
+h1 a:focus {
+  color: #08f;
 }
 
 h1 a:after {
@@ -151,6 +154,7 @@ h1 a:after {
   position: absolute;
   left: 0;
   top: 0;
+  font-size: 1rem;
 }
 
 .icon.-speaker {
@@ -176,11 +180,12 @@ h1 a:after {
 .icon.-speaker.-on:before {
   height: .333em;
   right: -.533em;
+  right: -.5em;
 }
 
 .icon.-speaker.-on:after {
   height: .667em;
-  right: -.733em;
+  right: -.666em;
   top: -50%;
 }
 

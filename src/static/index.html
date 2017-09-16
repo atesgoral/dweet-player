@@ -14,8 +14,11 @@
 </head>
 <body>
   <header>
+    <div class="button-bar">
+      <button id="toggle-audio" class="-with-icon" title="Toggle Audio"><span class="icon -speaker -on"></span>Toggle Audio</button>
+      <button id="full-screen" class="-with-icon" title="Full Screen"><span class="icon -full-screen"></span>Full Screen</button>
+    </div>
     <h1><a href="/">dweet player</a></h1>
-    <button id="full-screen" class="-with-icon" title="Full Screen"><span class="icon -full-screen"></span> Full Screen</button>
   </header>
   <section>
     <div id="music-info">Loading&hellip;</div>
@@ -28,7 +31,6 @@
     <a href="https://github.com/atesgoral/dweet-player">fork on GitHub</a>
   </footer>
   <script type="text/html" id="music-info-tpl">
-    <!--button id="toggle-mute"><span class="icon -speaker -on"></span> Mute</button-->
     <a href="${trackUrl}">${track}</a> by <a href="${artistUrl}">${artist}</a> &middot;
     <a href="${licenseUrl}">${license}</a>
   </script>

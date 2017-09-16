@@ -307,6 +307,7 @@
   }
 
   let source = null;
+  let gain = null;
 
   const isBeatOverlayEnabled = false;
   // @todo bad names: globals for beat overlay
@@ -318,6 +319,7 @@
     const ctx = new AudioContext();
 
     source = ctx.createBufferSource();
+    gain = ctx.createGain();
 
     source.loop = true;
 
@@ -384,7 +386,8 @@
     processor.connect(ctx.destination);
 
     source.connect(delay);
-    delay.connect(ctx.destination);
+    delay.connect(gain);
+    gain.connect(ctx.destination);
     // filter.connect(ctx.destination);
 
     return decodeAudio(data, ctx)
@@ -401,10 +404,20 @@
     screenfull.on('change', () => {
       $container.attr('full-screen', screenfull.isFullscreen);
     });
-  }
+
+    $('#toggle-audio')
+      .on('click', (event) => {
+        $(event.target).toggleClass('-on -off');
+        toggleAudio();
+      });
+}
 
   function startAudio() {
     source.start();
+  }
+
+  function toggleAudio() {
+    gain.gain.value ^= 1;
   }
 
   function fetchDweet(id) {

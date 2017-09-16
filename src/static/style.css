@@ -52,6 +52,14 @@ button {
   text-transform: lowercase;
 }
 
+button.-with-icon {
+  position: relative;
+  text-indent: -9999px;
+  overflow: hidden;
+  width: 1em;
+  height: 1em;
+}
+
 button span {
   margin-right: 0.125rem;
 }
@@ -139,7 +147,13 @@ h1 a:after {
   background: white;
 }
 
-.speaker {
+.icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.icon.-speaker {
   vertical-align: middle;
   box-sizing: border-box;
   display: inline-block;
@@ -149,25 +163,28 @@ h1 a:after {
   height: 1em;
   border: .333em solid transparent;
   border-right-color: currentColor;
-  position: relative;
   left: -.337em;
 }
-.speaker.-on:before, .speaker.-on:after {
+
+.icon.-speaker.-on:before, .icon.-speaker.-on:after {
   content: '';
   background: currentColor;
   width: .1em;
   position: absolute;
 }
-.speaker.-on:before {
+
+.icon.-speaker.-on:before {
   height: .333em;
   right: -.533em;
 }
-.speaker.-on:after {
+
+.icon.-speaker.-on:after {
   height: .667em;
   right: -.733em;
   top: -50%;
 }
-.speaker.-off:before, .speaker.-off:after {
+
+.icon.-speaker.-off:before, .icon.-speaker.-off:after {
   content: '';
   background: currentColor;
   width: .1em;
@@ -178,7 +195,37 @@ h1 a:after {
   left: .1em;
   transform: translateX(.333em) rotate(-45deg);
 }
-.speaker.-off:before {
+
+.icon.-speaker.-off:before {
   background: #eee;
   left: .2em;
+}
+
+.icon.-full-screen {
+  vertical-align: middle;
+  box-sizing: border-box;
+  display: inline-block;
+  border: .1em solid currentColor;
+  width: 1em;
+  height: 1em;
+}
+
+.icon.-full-screen:before, .icon.-full-screen:after {
+  content: '';
+  background: #eee;
+  position: absolute;
+}
+
+.icon.-full-screen:before {
+  width: .333em;
+  height: 1em;
+  left: .233em;
+  top: -.1em;
+}
+
+.icon.-full-screen:after {
+  width: 1em;
+  height: .333em;
+  top: .233em;
+  left: -.1em;
 }

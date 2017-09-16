@@ -391,6 +391,18 @@
       .then((buffer) => source.buffer = buffer);
   }
 
+  function setupUi() {
+    const $container = $('#container');
+
+    $('#full-screen')
+      .prop('disabled', !screenfull.enabled)
+      .on('click', () => screenfull.request($container[0]));
+
+    screenfull.on('change', () => {
+      $container.attr('full-screen', screenfull.isFullscreen);
+    });
+  }
+
   function startAudio() {
     source.start();
   }
@@ -508,6 +520,7 @@
       tasks
         .add(getCanvas())
         .then(setupRendering)
+        .then(setupUi)
         .then(() => showDweetInfo(dweet));
 
       tasks

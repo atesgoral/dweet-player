@@ -73,6 +73,11 @@ button:hover {
   color: #333;
 }
 
+button:disabled {
+  color: #ccc;
+  cursor: default;
+}
+
 header, section, footer {
   width: 568px;
   margin: 0 auto;
@@ -104,6 +109,11 @@ h1 a:after {
   overflow: hidden;
   background: white;
   margin-top: 1rem;
+}
+
+#container[full-screen='true'] {
+  height: auto;
+  cursor: none;
 }
 
 #music-info {

@@ -9,17 +9,17 @@
     src="https://code.jquery.com/jquery-3.2.1.min.js"
     integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
     crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/3.3.1/screenfull.min.js"></script>
   <script src="main.js"></script>
 </head>
 <body>
   <header>
     <h1><a href="/">dweet player</a></h1>
+    <button id="full-screen">Full Screen</button>
   </header>
   <section>
     <div id="music-info">Loading&hellip;</div>
-    <div id="container">
-      <canvas id="c"></canvas>
-    </div>
+    <div id="container"><canvas id="c"></canvas></div>
     <div id="dweet-info">Loading&hellip;</div>
   </section>
   <footer>
@@ -35,8 +35,6 @@
   <script type="text/html" id="dweet-info-tpl">
     <a href="${dweetUrl}">#${id}</a> by <a href="${authorUrl}">${author}</a> &middot;
     ${length}/140
-    <!--button id="full-screen">full screen</button>
-    <button id="toggle-theme">toggle theme</button-->
     <pre>${src}</pre>
   </script>
 </body>

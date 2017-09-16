@@ -1,8 +1,14 @@
+html, body {
+  height: 100%;
+}
+
 body {
   background: #eee;
   margin: 0;
   padding: 0;
   color: #888;
+  display: flex;
+  flex-direction: column;
 }
 
 body, button {
@@ -66,6 +72,7 @@ button span {
 
 header .button-bar {
   text-align: right;
+  line-height: 1rem;
 }
 
 header .button-bar button {
@@ -96,14 +103,19 @@ header {
   font-size: 0.75rem;
 }
 
+section {
+  flex: 1;
+}
+
 footer {
   margin-top: 1rem;
+  margin-bottom: 1rem;
   font-size: 0.75rem;
 }
 
 h1 {
   font-size: 1.5rem;
-  margin: 0 1rem 0 0;
+  margin: 0 2rem 0 0;
   line-height: 2rem;
 }
 

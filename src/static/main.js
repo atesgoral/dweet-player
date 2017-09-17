@@ -2,12 +2,11 @@
   const defaultTimeline = [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ].map((dweetId) => ({ dweetId }));
 
   // const loaders = [ 3096, 3097, 3098, 3115, 3110, 3114, 3108, 3109 ];
-  const loaders = [ 3096, 3097, 3098 ];
+  const loaders = [ 3096, 3097 ];
 
   const music = [{
     track: 'Memory',
     artist: 'Creo',
-    audioUrl: 'Creo_-_Memory.mp3',
     trackUrl: 'http://freemusicarchive.org/music/Creo/~/Memory_1520',
     artistUrl: 'http://freemusicarchive.org/music/Creo/',
     license: 'CC BY 4.0',
@@ -15,12 +14,11 @@
   }, {
     track: 'San Diego Cruisin',
     artist: 'Pierlo',
-    audioUrl: 'Pierlo_-_05_-_San_Diego_Cruisin.mp3',
     trackUrl: 'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
     artistUrl: 'http://freemusicarchive.org/music/Pierlo/',
     license: 'CC BY 4.0',
     licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
-  }][1];
+  }][0];
 
   function decodeTimeline(s) {
     const tokens = /^v(.+):(.+)$/.exec(s);
@@ -537,7 +535,7 @@
         .then(() => showDweetInfo(dweet));
 
       tasks
-        .add(fetchAudio(music.audioUrl))
+        .add(fetchAudio(music.trackUrl + '/download'))
         .then(setupAudio);
 
       getUniqueDweetIdsFromTimeline(timeline)

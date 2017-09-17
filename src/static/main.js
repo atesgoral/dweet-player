@@ -51,8 +51,7 @@
     return `/demo/v1/${demo.loaderDweetId || '*'}/${timelineStr}/${demo.trackUrl}`;
   }
 
-  const demo = decodeDemo(location.pathname)
-    || defaultDemo;
+  const demo = decodeDemo(location.pathname) || defaultDemo;
 
   history.replaceState({}, '', encodeDemo(demo));
 

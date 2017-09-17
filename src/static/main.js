@@ -1,54 +1,71 @@
 (() => {
-  const demo = {
+  const defaultLoaderDweetIds = [ 3096, 3097 ];
+
+  const defaultDemo = {
+    loaderDweetId: NaN,
     timeline: [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ].map((dweetId) => ({ dweetId })),
     trackUrl: [
+      'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
+      'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
       'http://freemusicarchive.org/music/Creo/~/Memory_1520',
       'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
     ][0]
   };
 
-  const loaders = [ 3096, 3097 ];
+  function getRandomLoaderDweetId() {
+    return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
+  }
 
-  function decodeTimeline(s) {
-    const tokens = /^v(.+):(.+)$/.exec(s);
+  function decodeDemo(s) {
+    const tokens = /^v(.+)\/(\d+)\/([^/]]+)\/(.+)$/.exec(s);
 
     if (!tokens) {
       return null;
     }
 
     const version = tokens[1];
-    const ids = tokens[2];
+    const loaderDweetId = parseInt(tokens[2], 10);
+    const timelineStr = tokens[3];
+    const trackUrl = tokens[4];
 
     if (version !== '1') {
       return null;
     }
 
-    return ids.split(',').map((s) => {
+    const timeline = timelineStr.split(',').map((s) => {
       return {
         dweetId: parseInt(s, 10)
       };
     });
+
+    return {
+      loaderDweetId,
+      timeline,
+      trackUrl
+    };
   }
 
-  function encodeTimeline(timeline) {
-    return 'v1:' + timeline.map((scene) => scene.dweetId).join(',');
+  function encodeDemo(demo) {
+    const timelineStr = demo.timeline.map((scene) => scene.dweetId).join(',');
+
+    return `v1/${demo.loaderDweetId || '*'}/${timelineStr}/${demo.trackUrl}`;
   }
 
-  const timeline = location.search
-    && decodeTimeline(location.search.slice(1))
-    || demo.timeline;
+  const demo = location.search
+    && decodeDemo(location.search.slice(1))
+    || defaultDemo;
+
+  const url = location.href.split('?').slice(0, 1).concat(encodeDemo(demo)).join('?');
+  history.replaceState({}, '', url);
 
   function getUniqueDweetIdsFromTimeline(timeline) {
     return Object.keys(
-      timeline.reduce((idMap, scene) => {
+      demo.timeline.reduce((idMap, scene) => {
         idMap[scene.dweetId] = 1;
         return idMap;
       }, {})
     );
   }
-
-  const url = location.href.split('?').slice(0, 1).concat(encodeTimeline(timeline)).join('?');
-  history.replaceState({}, '', url);
 
   /* Frame advancers */
 
@@ -478,7 +495,7 @@
 
   function setActiveScene(idx) {
     sceneIdx = idx;
-    scene = timeline[idx];
+    scene = demo.timeline[idx];
 
     blender = overwriteBlender;
     //blender = zoomToBeatBlender;
@@ -502,7 +519,7 @@
   }
 
   function advanceToNextScene() {
-    setActiveScene((sceneIdx + 1) % timeline.length);
+    setActiveScene((sceneIdx + 1) % demo.timeline.length);
   }
 
   const tasks = (() => {
@@ -527,7 +544,7 @@
     };
   })();
 
-  fetchDweet(loaders[Math.random() * loaders.length | 0])
+  fetchDweet(demo.loaderDweetId || getRandomLoaderDweetId())
     .then(setDweet)
     .then(() => {
       tasks.add(getCanvas()
@@ -542,7 +559,7 @@
         .then(setupAudio)
       );
 
-      getUniqueDweetIdsFromTimeline(timeline)
+      getUniqueDweetIdsFromTimeline(demo.timeline)
         .forEach((dweetId, idx) => tasks.add(fetchDweet(dweetId)
           .then((dweet) => dweets[dweetId] = dweet)
         ));

@@ -4,21 +4,10 @@
   // const loaders = [ 3096, 3097, 3098, 3115, 3110, 3114, 3108, 3109 ];
   const loaders = [ 3096, 3097 ];
 
-  const music = [{
-    track: 'Memory',
-    artist: 'Creo',
-    trackUrl: 'http://freemusicarchive.org/music/Creo/~/Memory_1520',
-    artistUrl: 'http://freemusicarchive.org/music/Creo/',
-    license: 'CC BY 4.0',
-    licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
-  }, {
-    track: 'San Diego Cruisin',
-    artist: 'Pierlo',
-    trackUrl: 'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
-    artistUrl: 'http://freemusicarchive.org/music/Pierlo/',
-    license: 'CC BY 4.0',
-    licenseUrl: 'http://creativecommons.org/licenses/by/4.0/'
-  }][0];
+  const trackUrl = [
+    'http://freemusicarchive.org/music/Creo/~/Memory_1520',
+    'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
+  ][0];
 
   function decodeTimeline(s) {
     const tokens = /^v(.+):(.+)$/.exec(s);
@@ -215,6 +204,7 @@
   let dweets = {};
   let sceneIdx = 0;
   let scene = null;
+  let track = null;
 
   function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -224,11 +214,11 @@
     return new Promise((resolve) => $(() => resolve($("#c").get(0))));
   }
 
-  function showMusicInfo(music) {
-    const tpl = $('#music-info-tpl').html();
-    const params = music;
+  function showTrackInfo(track) {
+    const tpl = $('#track-info-tpl').html();
+    const params = track;
 
-    $('#music-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
+    $('#track-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
   }
 
   function showDweetInfo(dweet) {
@@ -408,7 +398,7 @@
         $(this).find('.icon.-speaker').toggleClass('-on -off');
         toggleAudio();
       });
-}
+  }
 
   function startAudio() {
     source.start();
@@ -416,6 +406,18 @@
 
   function toggleAudio() {
     gain.gain.value ^= 1;
+  }
+
+  function setTrack(_track) {
+    return track = _track;
+  }
+
+  function setDweet(_dweet) {
+    return dweet = _dweet;
+  }
+
+  function fetchTrack(url) {
+    return $.ajax(`/api/tracks/${encodeURIComponent(url)}`, { dataType: 'json' });
   }
 
   function fetchDweet(id) {
@@ -427,7 +429,7 @@
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
 
-      request.open('GET', url, true);
+      request.open('GET', `/api/proxy/${encodeURIComponent(url)}`, true);
       request.responseType = 'arraybuffer';
 
       request.onload = () => resolve(request.response);
@@ -526,28 +528,29 @@
   })();
 
   fetchDweet(loaders[Math.random() * loaders.length | 0])
-    .then((loader) => dweet = createRuntime(loader))
+    .then(setDweet)
     .then(() => {
-      tasks
-        .add(getCanvas())
+      tasks.add(getCanvas()
         .then(setupRendering)
         .then(setupUi)
-        .then(() => showDweetInfo(dweet));
+        .then(() => showDweetInfo(dweet))
+      );
 
-      tasks
-        .add(fetchAudio(music.trackUrl + '/download'))
-        .then(setupAudio);
+      tasks.add(fetchTrack(trackUrl)
+        .then(setTrack)
+        .then((track) => fetchAudio(track.audioUrl))
+        .then(setupAudio)
+      );
 
       getUniqueDweetIdsFromTimeline(timeline)
-        .forEach((dweetId, idx) => tasks
-          .add(fetchDweet(dweetId))
+        .forEach((dweetId, idx) => tasks.add(fetchDweet(dweetId)
           .then((dweet) => dweets[dweetId] = dweet)
-        );
+        ));
 
       tasks.whenDone()
         .then(() => pause(1000))
         .then(() => {
-          showMusicInfo(music);
+          showTrackInfo(track);
           startAudio();
           setActiveScene(0);
           //frameAdvancer = monotonousFrameAdvancer;

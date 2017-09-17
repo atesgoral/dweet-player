@@ -1,37 +1,90 @@
+require('dotenv').config();
+
 const express = require('express');
 const request = require('request-promise-native');
 const cheerio = require('cheerio');
 
 const app = express();
 
-const dweetCache = {};
+const cacheMaxAge = 60 * 5; // 5 minutes
+
+const fmaApiKey = process.env.FMA_API_KEY;
 
 app.get('/api/dweets/:id', (req, res, next) => {
   const id = parseInt(req.params.id, 10);
 
-  let dweet = dweetCache[id];
+  request(`https://www.dwitter.net/d/${id}`)
+    .then((response) => {
+      const $ = cheerio.load(response);
+      const author = $('.dweet-author a').text();
+      const src = $('.code-input').val();
 
-  if (dweet) {
-    res.json(dweet);
-  } else {
-    request(`https://www.dwitter.net/d/${id}`)
-      .then((response) => {
-        const $ = cheerio.load(response);
-        const author = $('.dweet-author a').text();
-        const src = $('.code-input').val();
+      dweet = {
+        id,
+        author,
+        src
+      };
 
-        dweet = {
-          id,
-          author,
-          src
-        };
+      res.set('Cache-Control', `public, max-age=${cacheMaxAge}`);
+      res.json(dweet);
+    })
+    .catch(next);
+});
 
-        dweetCache[id] = dweet;
+app.get('/api/tracks/:trackUrl', (req, res, next) => {
+  const trackUrl = decodeURIComponent(req.params.trackUrl);
 
-        res.json(dweet);
-      })
-      .catch(next);
-  }
+  request(trackUrl)
+    .then((response) => {
+      const $ = cheerio.load(response);
+      const className = $('.play-item').attr('class');
+      const tokens = /\btid-(\d+)/.exec(className);
+
+      if (tokens) {
+        return tokens[1];
+      } else {
+        throw new Error('Could not extract track ID');
+      }
+    })
+    .then((trackId) => { // @todo can scrape all this from page, probably
+      const dataset = 'tracks';
+      const format = 'json';
+      const url = `https://freemusicarchive.org/api/get/${dataset}.${format}?api_key=${fmaApiKey}&track_id=${trackId}`;
+
+      return request(url);
+    })
+    .then(JSON.parse)
+    .then((response) => response.dataset[0])
+    .then((track) => {
+      res.set('Cache-Control', `public, max-age=${cacheMaxAge}`);
+      res.json({
+        audioUrl: trackUrl + '/download',
+        trackTitle: track.track_title,
+        trackUrl,
+        artistName: track.artist_name,
+        artistUrl: track.artist_url,
+        licenseTitle: track.license_title,
+        licenseUrl: track.license_url
+      });
+    })
+    .catch(next);
+});
+
+app.get('/api/proxy/:url', (req, res, next) => {
+  const url = decodeURIComponent(req.params.url);
+  const options = {
+    url,
+    encoding: null
+  };
+
+  // @todo stream?
+  request(options)
+    .then((response) => {
+      res.set('Cache-Control', `public, max-age=${cacheMaxAge}`);
+      //res.set('Content-Type', res.headers['Content-Type']);
+      res.send(response);
+    })
+    .catch(next);
 });
 
 app.use(express.static('./src/static'));

@@ -21,7 +21,7 @@
     <h1><a href="/">dweet player</a></h1>
   </header>
   <section>
-    <div id="music-info">Loading&hellip;</div>
+    <div id="track-info">Loading&hellip;</div>
     <div id="container"><canvas id="c"></canvas></div>
     <div id="dweet-info">Loading&hellip;</div>
   </section>
@@ -30,9 +30,9 @@
     <a href="https://www.dwitter.net">browse dweets on Dwitter</a> &middot;
     <a href="https://github.com/atesgoral/dweet-player">fork on GitHub</a>
   </footer>
-  <script type="text/html" id="music-info-tpl">
-    <a href="${trackUrl}">${track}</a> by <a href="${artistUrl}">${artist}</a> &middot;
-    <a href="${licenseUrl}">${license}</a>
+  <script type="text/html" id="track-info-tpl">
+    <a href="${trackUrl}">${trackTitle}</a> by <a href="${artistUrl}">${artistName}</a> &middot;
+    <a href="${licenseUrl}">${licenseName}</a>
   </script>
   <script type="text/html" id="dweet-info-tpl">
     <a href="${dweetUrl}">#${id}</a> by <a href="${authorUrl}">${author}</a> &middot;

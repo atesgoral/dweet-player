@@ -17,7 +17,7 @@
   }
 
   function decodeDemo(s) {
-    const tokens = /^v(.+)\/(\d+)\/([^/]]+)\/(.+)$/.exec(s);
+    const tokens = /\/demo\/^v(.+)\/(\d+)\/([^/]]+)\/(.+)$/.exec(s);
 
     if (!tokens) {
       return null;
@@ -48,15 +48,13 @@
   function encodeDemo(demo) {
     const timelineStr = demo.timeline.map((scene) => scene.dweetId).join(',');
 
-    return `v1/${demo.loaderDweetId || '*'}/${timelineStr}/${demo.trackUrl}`;
+    return `/demo/v1/${demo.loaderDweetId || '*'}/${timelineStr}/${demo.trackUrl}`;
   }
 
-  const demo = location.search
-    && decodeDemo(location.search.slice(1))
+  const demo = decodeDemo(location.pathname)
     || defaultDemo;
 
-  const url = location.href.split('?').slice(0, 1).concat(encodeDemo(demo)).join('?');
-  history.replaceState({}, '', url);
+  history.replaceState({}, '', encodeDemo(demo));
 
   function getUniqueDweetIdsFromTimeline(timeline) {
     return Object.keys(

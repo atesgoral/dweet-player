@@ -89,6 +89,12 @@ app.get('/api/proxy/:url', (req, res, next) => {
 
 app.use(express.static('./src/static'));
 
+app.get('/demo/*', (req, res, next) => {
+  res.sendFile('index.html', {
+    root: __dirname + '/static'
+  });
+});
+
 const port = parseInt(process.env.PORT || 7890, 10);
 
 app.listen(port, () => {

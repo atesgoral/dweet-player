@@ -655,7 +655,6 @@
           showTrackInfo(activeTrack);
           startAudio();
           setActiveSceneByIdx(0);
-          //frameAdvancer = monotonousFrameAdvancer;
           frameAdvancer = beatConsciousFrameAdvancer
           blender = fadeOutToWhiteBlender.reset();
 

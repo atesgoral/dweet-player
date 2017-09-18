@@ -16,6 +16,70 @@
     return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
   }
 
+  class ExactTimeSceneAdvancer {
+    constructor(seconds, callback) {
+      this.targetSeconds = seconds;
+      this.callback = callback;
+    }
+
+    reset() {
+      this.startTime = Date.now();
+    }
+
+    beat() {}
+
+    frame() {
+      const elapsedSeconds = (Date.now() - this.startTime) / 1000;
+
+      if (elapsedSeconds >= this.targetSeconds) {
+        this.callback();
+      }
+    }
+  }
+
+  class ApproxTimeSceneAdvancer {
+    constructor(seconds, callback) {
+      this.targetSeconds = seconds;
+      this.callback = callback;
+    }
+
+    reset() {
+      this.startTime = Date.now();
+      this.elapsedSeconds = 0;
+    }
+
+    beat() {
+      if (Math.abs(this.elapsedSeconds - this.targetSeconds) < 0.1) {
+        this.callback();
+      }
+    }
+
+    frame() {
+      this.elapsedSeconds = (Date.now() - this.startTime) / 1000;
+    }
+  }
+
+  class ExactBeatSceneAdvancer {
+    constructor(beats, callback) {
+      this.targetBeats = beats;
+      this.callback = callback;
+    }
+
+    reset() {
+      this.elapsedBeats = 0;
+    }
+
+    beat() {
+      this.elapsedBeats++;
+
+      if (this.elapsedBeats === this.targetBeats) {
+        this.callback();
+      }
+    }
+
+    frame() {}
+  }
+
   function decodeDemo(s) {
     const tokens = /\/demo\/^v(.+)\/(\d+)\/([^/]]+)\/(.+)$/.exec(s);
 
@@ -32,10 +96,35 @@
       return null;
     }
 
-    const timeline = timelineStr.split(',').map((s) => {
-      return {
-        dweetId: parseInt(s, 10)
-      };
+    const timeline = timelineStr
+    .split(',')
+    .map((s) => {
+      const tokens = /^(\d+)(?:([@~!])(\d+))?/.exec(s);
+
+      if (tokens) {
+        const dweetId = tokens[1];
+        const durationType = tokens[2] || '~';
+        const durationAmount = tokens[3] || 4;
+
+        const SceneAdvancer = {
+          '@': ExactTimeSceneAdvancer,
+          '~': ApproxTimeSceneAdvancer,
+          '!': ExactBeatSceneAdvancer
+        }[durationType];
+
+        const sceneAdvancer = new SceneAdvancer(durationAmount);
+
+        const frameAdvancer = beatConsciousFrameAdvancer;
+
+        return {
+          dweetId,
+          sceneAdvancer,
+          frameAdvancer
+        };
+      } else {
+        console.error('Invalid scene', s);
+        return null;
+      }
     });
 
     return {

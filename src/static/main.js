@@ -24,7 +24,7 @@
     }
   };
 
-  const defaultDemoStr = '/demo/v1/*/701,888,1231,739,933,855,683,1829,433,135/'
+  const defaultDemoStr = '/demo/v1/*/701@2,888@1,1231,739,933,855,683,1829,433,135/'
     + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
@@ -101,18 +101,18 @@
   }
 
   function decodeDemo(s) {
-    const tokens = /^\/demo\/v(\d)\/([^/]+)\/([^/]+)\/(.+)$/.exec(s);
+    const tokens = /^\/demo\/v([^/])\/([^/]+)\/([^/]+)\/(.+)$/.exec(s);
 
     if (!tokens) {
       return null;
     }
 
-    const version = tokens[1];
+    const version = parseFloat(tokens[1]);
     const loaderDweetId = parseInt(tokens[2], 10);
     const timelineStr = tokens[3];
     const trackUrl = tokens[4];
 
-    if (version !== '1') {
+    if (version !== 1) {
       return null;
     }
 
@@ -129,7 +129,7 @@
         if (tokens) {
           const dweetId = tokens[1];
           const durationType = tokens[2] || '~';
-          const durationAmount = tokens[3] || 4;
+          const durationAmount = parseFloat(tokens[3] || '5');
 
           const SceneAdvancer = {
             '@': ExactTimeSceneAdvancer,
@@ -137,7 +137,7 @@
             '!': ExactBeatSceneAdvancer
           }[durationType];
 
-          const sceneAdvancer = new SceneAdvancer(durationAmount);
+          const sceneAdvancer = new SceneAdvancer(durationAmount, advanceToNextScene);
 
           const frameAdvancer = beatConsciousFrameAdvancer;
 
@@ -196,33 +196,10 @@
     }
   };
 
-  /* Dweet advancers */
-
-  const beatConcsciousSceneAdvancer = {
-    waitTime: null,
-    lastAdvanceTime: null,
-    waitBy: function (time) {
-      this.waitTime = time;
-      this.lastAdvanceTime = Date.now();
-    },
-    beat: function () {
-      if (!this.waitTime) {
-        return;
-      }
-
-      const now = Date.now();
-
-      if (now - this.lastAdvanceTime >= this.waitTime) {
-        advanceToNextScene();
-        this.lastAdvanceTime = now;
-      }
-    }
-  };
-
   let beat = 0;
 
   function beatHandler() {
-    beatConcsciousSceneAdvancer.beat();
+    activeScene.sceneAdvancer && activeScene.sceneAdvancer.beat();
   }
 
   /* Blenders */
@@ -353,6 +330,7 @@
     function render() {
       requestAnimationFrame(render);
 
+      activeScene.sceneAdvancer && activeScene.sceneAdvancer.frame();
       activeDweet.setFrame(activeScene.frameAdvancer.getFrame());
 
       try {
@@ -594,7 +572,7 @@
   function setActiveScene(scene) {
     activeScene = scene;
 
-    beatConcsciousSceneAdvancer.waitBy(4000);
+    activeScene.sceneAdvancer && activeScene.sceneAdvancer.reset();
 
     blender = overwriteBlender;
 

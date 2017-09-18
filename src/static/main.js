@@ -48,14 +48,11 @@
       this.callback = callback;
     }
 
-    reset() {
-      this.startTime = Date.now();
-    }
-
+    reset() {}
     beat() {}
 
     setFrame(frame) {
-      const elapsedSeconds = (Date.now() - this.startTime) / 1000;
+      const elapsedSeconds = frame / 60;
 
       if (elapsedSeconds >= this.targetSeconds) {
         this.callback();
@@ -70,7 +67,6 @@
     }
 
     reset() {
-      this.startTime = Date.now();
       this.elapsedSeconds = 0;
     }
 
@@ -81,7 +77,7 @@
     }
 
     setFrame(frame) {
-      this.elapsedSeconds = (Date.now() - this.startTime) / 1000;
+      this.elapsedSeconds = frame / 60;
     }
   }
 
@@ -585,6 +581,7 @@
     blender = overwriteBlender;
 
     setActiveDweet(dweets[activeScene.dweetId]);
+    beatConsciousFrameAdvancer.frame = 0;
   }
 
   function setActiveSceneByIdx(idx) {
@@ -642,7 +639,7 @@
           showTrackInfo(activeTrack);
           startAudio();
           setActiveSceneByIdx(0);
-          frameAdvancer = beatConsciousFrameAdvancer
+          frameAdvancer = beatConsciousFrameAdvancer;
           blender = fadeOutToWhiteBlender.reset();
 
           return pause(5000);

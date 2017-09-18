@@ -525,7 +525,9 @@
 
   function fetchDweet(id) {
     return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
-      .then(createRuntime);
+      .then(createRuntime)
+      .then((dweet) => dweets[id] = dweet);
+
   }
 
   function fetchAudio(url) {
@@ -601,6 +603,7 @@
     // horizontalMirrorBlender
 
     dweet = dweets[scene.dweetId];
+
     showDweetInfo(dweet);
   }
 
@@ -646,9 +649,7 @@
       );
 
       getUniqueDweetIdsFromTimeline(demo.timeline)
-        .forEach((dweetId, idx) => tasks.add(fetchDweet(dweetId)
-          .then((dweet) => dweets[dweetId] = dweet)
-        ));
+        .forEach((dweetId) => tasks.add(fetchDweet(dweetId)));
 
       tasks.whenDone()
         .then(() => pause(1000))

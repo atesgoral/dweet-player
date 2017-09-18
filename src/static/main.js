@@ -39,7 +39,7 @@
   class StubSceneAdvancer {
     reset() {}
     beat() {}
-    frame() {}
+    setFrame() {}
   }
 
   class ExactTimeSceneAdvancer {
@@ -54,7 +54,7 @@
 
     beat() {}
 
-    frame() {
+    setFrame(frame) {
       const elapsedSeconds = (Date.now() - this.startTime) / 1000;
 
       if (elapsedSeconds >= this.targetSeconds) {
@@ -80,7 +80,7 @@
       }
     }
 
-    frame() {
+    setFrame(frame) {
       this.elapsedSeconds = (Date.now() - this.startTime) / 1000;
     }
   }
@@ -103,7 +103,7 @@
       }
     }
 
-    frame() {}
+    setFrame() {}
   }
 
   function decodeDemo(s) {
@@ -337,14 +337,13 @@
     function render() {
       requestAnimationFrame(render);
 
-      activeScene.sceneAdvancer.frame();
-      activeDweet.setFrame(activeScene.frameAdvancer.getFrame());
+      const frame = activeScene.frameAdvancer.getFrame();
+      activeDweet.setFrame(frame);
 
       try {
         activeDweet.render();
       } catch (e) {
         console.error(e);
-        return;
       }
 
       blender.beforeDraw && blender.beforeDraw(ctx);
@@ -382,6 +381,8 @@
         ctx.fillStyle = 'red';
         ctx.fillRect(0, canvas.height - gavg * 2 - 1, canvas.width, 1);
       }
+
+      activeScene.sceneAdvancer.setFrame(frame);
     }
 
     render();

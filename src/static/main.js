@@ -36,6 +36,12 @@
     return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
   }
 
+  class StubSceneAdvancer {
+    reset() {}
+    beat() {}
+    frame() {}
+  }
+
   class ExactTimeSceneAdvancer {
     constructor(seconds, callback) {
       this.targetSeconds = seconds;
@@ -118,6 +124,7 @@
 
     const loaderScene = {
       dweetId: loaderDweetId,
+      sceneAdvancer: new StubSceneAdvancer(),
       frameAdvancer: progressFrameAdvancer
     };
 
@@ -199,7 +206,7 @@
   let beat = 0;
 
   function beatHandler() {
-    activeScene.sceneAdvancer && activeScene.sceneAdvancer.beat();
+    activeScene.sceneAdvancer.beat();
   }
 
   /* Blenders */
@@ -330,7 +337,7 @@
     function render() {
       requestAnimationFrame(render);
 
-      activeScene.sceneAdvancer && activeScene.sceneAdvancer.frame();
+      activeScene.sceneAdvancer.frame();
       activeDweet.setFrame(activeScene.frameAdvancer.getFrame());
 
       try {
@@ -572,7 +579,7 @@
   function setActiveScene(scene) {
     activeScene = scene;
 
-    activeScene.sceneAdvancer && activeScene.sceneAdvancer.reset();
+    activeScene.sceneAdvancer.reset();
 
     blender = overwriteBlender;
 

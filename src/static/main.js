@@ -24,7 +24,7 @@
     }
   };
 
-  const defaultDemoStr = '/demo/v1/*/701@2,888@1,1231,739,933,855,683,1829,433,135/'
+  const defaultDemoStr = '/demo/v1/*/701@2,888@1,1231~4,739!3,933,855,683,1829,433,135/'
     + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
@@ -75,7 +75,7 @@
     }
 
     beat() {
-      if (Math.abs(this.elapsedSeconds - this.targetSeconds) < 0.1) {
+      if (this.elapsedSeconds >= this.targetSeconds) {
         this.callback();
       }
     }

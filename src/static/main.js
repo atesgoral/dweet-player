@@ -307,15 +307,14 @@
     }
   };
 
-  let dweet = null;
-
   let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
 
   let dweets = {};
-  let sceneIdx = 0;
-  let scene = null;
-  let track = null;
+  let activeSceneIdx = 0;
+  let activeScene = null;
+  let activeTrack = null;
+  let activeDweet = null;
 
   function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -352,10 +351,10 @@
     function render() {
       requestAnimationFrame(render);
 
-      dweet.setFrame(frameAdvancer.getFrame());
+      activeDweet.setFrame(frameAdvancer.getFrame());
 
       try {
-        dweet.render();
+        activeDweet.render();
       } catch (e) {
         console.error(e);
         return;
@@ -363,7 +362,7 @@
 
       blender.beforeDraw && blender.beforeDraw(ctx);
 
-      const dc = dweet.canvas;
+      const dc = activeDweet.canvas;
 
       if (blender.draw) {
         blender.draw(ctx, dc)
@@ -519,12 +518,12 @@
     gain.gain.value ^= 1;
   }
 
-  function setTrack(_track) {
-    return track = _track;
+  function setActiveTrack(track) {
+    return activeTrack = track;
   }
 
-  function setDweet(_dweet) {
-    return dweet = _dweet;
+  function setActiveDweet(dweet) {
+    return activeDweet = dweet;
   }
 
   function fetchTrack(url) {
@@ -590,8 +589,8 @@
   }
 
   function setActiveScene(idx) {
-    sceneIdx = idx;
-    scene = demo.timeline[idx];
+    activeSceneIdx = idx;
+    activeScene = demo.timeline[idx];
 
     blender = overwriteBlender;
     //blender = zoomToBeatBlender;
@@ -610,13 +609,13 @@
     // flashToBeatBlender,
     // horizontalMirrorBlender
 
-    dweet = dweets[scene.dweetId];
+    activeDweet = dweets[activeScene.dweetId];
 
-    showDweetInfo(dweet);
+    showDweetInfo(activeDweet);
   }
 
   function advanceToNextScene() {
-    setActiveScene((sceneIdx + 1) % demo.timeline.length);
+    setActiveScene((activeSceneIdx + 1) % demo.timeline.length);
   }
 
   const tasks = (() => {
@@ -642,16 +641,16 @@
   })();
 
   fetchDweet(demo.loaderScene.dweetId || getRandomLoaderDweetId())
-    .then(setDweet)
+    .then(setActiveDweet)
     .then(() => {
       tasks.add(getCanvas()
         .then(setupRendering)
         .then(setupUi)
-        .then(() => showDweetInfo(dweet))
+        .then(() => showDweetInfo(activeDweet))
       );
 
       tasks.add(fetchTrack(demo.trackUrl)
-        .then(setTrack)
+        .then(setActiveTrack)
         .then((track) => fetchAudio(track.audioUrl))
         .then(setupAudio)
       );
@@ -662,7 +661,7 @@
       tasks.whenDone()
         .then(() => pause(1000))
         .then(() => {
-          showTrackInfo(track);
+          showTrackInfo(activeTrack);
           startAudio();
           setActiveScene(0);
           //frameAdvancer = monotonousFrameAdvancer;

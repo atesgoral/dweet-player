@@ -1,8 +1,22 @@
 (() => {
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
+  const beatConsciousFrameAdvancer = {
+    frame: 0,
+    getFrame: function () {
+      const frame = this.frame;
+
+      this.frame += 1 + beat * 4;
+
+      return frame;
+    }
+  };
+
   const defaultDemo = {
-    loaderDweetId: NaN,
+    loaderScene: {
+      dweetId: NaN,
+      frameAdvancer: beatConsciousFrameAdvancer
+    },
     timeline: [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ].map((dweetId) => ({ dweetId })),
     trackUrl: [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
@@ -96,39 +110,44 @@
       return null;
     }
 
+    const loaderScene = {
+      dweetId: loaderDweetId,
+      frameAdvancer: beatConsciousFrameAdvancer
+    };
+
     const timeline = timelineStr
-    .split(',')
-    .map((s) => {
-      const tokens = /^(\d+)(?:([@~!])(\d+))?/.exec(s);
+      .split(',')
+      .map((s) => {
+        const tokens = /^(\d+)(?:([@~!])(\d+))?/.exec(s);
 
-      if (tokens) {
-        const dweetId = tokens[1];
-        const durationType = tokens[2] || '~';
-        const durationAmount = tokens[3] || 4;
+        if (tokens) {
+          const dweetId = tokens[1];
+          const durationType = tokens[2] || '~';
+          const durationAmount = tokens[3] || 4;
 
-        const SceneAdvancer = {
-          '@': ExactTimeSceneAdvancer,
-          '~': ApproxTimeSceneAdvancer,
-          '!': ExactBeatSceneAdvancer
-        }[durationType];
+          const SceneAdvancer = {
+            '@': ExactTimeSceneAdvancer,
+            '~': ApproxTimeSceneAdvancer,
+            '!': ExactBeatSceneAdvancer
+          }[durationType];
 
-        const sceneAdvancer = new SceneAdvancer(durationAmount);
+          const sceneAdvancer = new SceneAdvancer(durationAmount);
 
-        const frameAdvancer = beatConsciousFrameAdvancer;
+          const frameAdvancer = beatConsciousFrameAdvancer;
 
-        return {
-          dweetId,
-          sceneAdvancer,
-          frameAdvancer
-        };
-      } else {
-        console.error('Invalid scene', s);
-        return null;
-      }
-    });
+          return {
+            dweetId,
+            sceneAdvancer,
+            frameAdvancer
+          };
+        } else {
+          console.error('Invalid scene', s);
+          return null;
+        }
+      });
 
     return {
-      loaderDweetId,
+      loaderScene,
       timeline,
       trackUrl
     };
@@ -137,7 +156,7 @@
   function encodeDemo(demo) {
     const timelineStr = demo.timeline.map((scene) => scene.dweetId).join(',');
 
-    return `/demo/v1/${demo.loaderDweetId || '*'}/${timelineStr}/${demo.trackUrl}`;
+    return `/demo/v1/${demo.loaderScene.dweetId || '*'}/${timelineStr}/${demo.trackUrl}`;
   }
 
   const demo = decodeDemo(location.pathname) || defaultDemo;
@@ -171,17 +190,6 @@
     frame: 0,
     getFrame: function () {
       return this.frame++;
-    }
-  };
-
-  const beatConsciousFrameAdvancer = {
-    frame: 0,
-    getFrame: function () {
-      const frame = this.frame;
-
-      this.frame += 1 + beat * 4;
-
-      return frame;
     }
   };
 
@@ -633,7 +641,7 @@
     };
   })();
 
-  fetchDweet(demo.loaderDweetId || getRandomLoaderDweetId())
+  fetchDweet(demo.loaderScene.dweetId || getRandomLoaderDweetId())
     .then(setDweet)
     .then(() => {
       tasks.add(getCanvas()

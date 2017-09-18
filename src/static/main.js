@@ -1,6 +1,18 @@
 (() => {
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
+  const progressFrameAdvancer = {
+    done: 0,
+    fakeProgress: 0,
+    getFrame: function () {
+      this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
+      return this.fakeProgress * 60;
+    },
+    updateProgress: function (pending, total) {
+      this.done = 1 - pending / total;
+    }
+  };
+
   const beatConsciousFrameAdvancer = {
     frame: 0,
     getFrame: function () {
@@ -12,19 +24,13 @@
     }
   };
 
-  const defaultDemo = {
-    loaderScene: {
-      dweetId: NaN,
-      frameAdvancer: beatConsciousFrameAdvancer
-    },
-    timeline: [ 701, 888, 1231, 739, 933, 855, 683, 1829, 433, 135 ].map((dweetId) => ({ dweetId })),
-    trackUrl: [
+  const defaultDemoStr = '/demo/v1/*/701,888,1231,739,933,855,683,1829,433,135/'
+    + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
       'http://freemusicarchive.org/music/Creo/~/Memory_1520',
       'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
-    ][0]
-  };
+    ][0];
 
   function getRandomLoaderDweetId() {
     return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
@@ -95,7 +101,7 @@
   }
 
   function decodeDemo(s) {
-    const tokens = /\/demo\/^v(.+)\/(\d+)\/([^/]]+)\/(.+)$/.exec(s);
+    const tokens = /^\/demo\/v(\d)\/([^/]+)\/([^/]+)\/(.+)$/.exec(s);
 
     if (!tokens) {
       return null;
@@ -112,7 +118,7 @@
 
     const loaderScene = {
       dweetId: loaderDweetId,
-      frameAdvancer: beatConsciousFrameAdvancer
+      frameAdvancer: progressFrameAdvancer
     };
 
     const timeline = timelineStr
@@ -153,15 +159,20 @@
     };
   }
 
-  function encodeDemo(demo) {
-    const timelineStr = demo.timeline.map((scene) => scene.dweetId).join(',');
+  let demo = null;
 
-    return `/demo/v1/${demo.loaderScene.dweetId || '*'}/${timelineStr}/${demo.trackUrl}`;
+  if (location.pathname !== '/') {
+    demo = decodeDemo(location.pathname);
+
+    if (!demo) {
+      console.warn('Could not decode demo', location.pathname);
+    }
   }
 
-  const demo = decodeDemo(location.pathname) || defaultDemo;
-
-  history.replaceState({}, '', encodeDemo(demo));
+  if (!demo) {
+    demo = decodeDemo(defaultDemoStr);
+    history.replaceState({}, '', defaultDemoStr);
+  }
 
   if (isNaN(demo.loaderScene.dweetId)) {
     demo.loaderScene.dweetId = getRandomLoaderDweetId();
@@ -177,18 +188,6 @@
   }
 
   /* Frame advancers */
-
-  const progressFrameAdvancer = {
-    done: 0,
-    fakeProgress: 0,
-    getFrame: function () {
-      this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
-      return this.fakeProgress * 60;
-    },
-    updateProgress: function (pending, total) {
-      this.done = 1 - pending / total;
-    }
-  };
 
   const monotonousFrameAdvancer = {
     frame: 0,
@@ -311,7 +310,6 @@
     }
   };
 
-  let frameAdvancer = progressFrameAdvancer;
   let blender = overwriteBlender;
 
   let dweets = {};
@@ -355,7 +353,7 @@
     function render() {
       requestAnimationFrame(render);
 
-      activeDweet.setFrame(frameAdvancer.getFrame());
+      activeDweet.setFrame(activeScene.frameAdvancer.getFrame());
 
       try {
         activeDweet.render();
@@ -596,7 +594,6 @@
   function setActiveScene(scene) {
     activeScene = scene;
 
-    frameAdvancer = beatConsciousFrameAdvancer;
     beatConcsciousSceneAdvancer.waitBy(4000);
 
     blender = overwriteBlender;
@@ -636,7 +633,7 @@
   })();
 
   fetchDweet(demo.loaderScene.dweetId)
-    .then(setActiveDweet)
+    .then(() => setActiveScene(demo.loaderScene))
     .then(() => {
       tasks.add(getCanvas()
         .then(setupRendering)

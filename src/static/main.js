@@ -523,6 +523,7 @@
   }
 
   function setActiveDweet(dweet) {
+    showDweetInfo(dweet);
     return activeDweet = dweet;
   }
 
@@ -588,34 +589,24 @@
     });
   }
 
-  function setActiveScene(idx) {
-    activeSceneIdx = idx;
-    activeScene = demo.timeline[idx];
-
-    blender = overwriteBlender;
-    //blender = zoomToBeatBlender;
-    //blender = flashToBeatBlender;
-    //blender = horizontalMirrorBlender
+  function setActiveScene(scene) {
+    activeScene = scene;
 
     frameAdvancer = beatConsciousFrameAdvancer;
     beatConcsciousSceneAdvancer.waitBy(4000);
-    // monotonousFrameAdvancer,
-    // beatConsciousFrameAdvancer
 
     blender = overwriteBlender;
-    // fadeOutToWhiteBlender.reset(),
-    // overwriteBlender,
-    // zoomToBeatBlender,
-    // flashToBeatBlender,
-    // horizontalMirrorBlender
 
-    activeDweet = dweets[activeScene.dweetId];
+    setActiveDweet(dweets[activeScene.dweetId]);
+  }
 
-    showDweetInfo(activeDweet);
+  function setActiveSceneByIdx(idx) {
+    activeSceneIdx = idx;
+    setActiveScene(demo.timeline[idx]);
   }
 
   function advanceToNextScene() {
-    setActiveScene((activeSceneIdx + 1) % demo.timeline.length);
+    setActiveSceneByIdx((activeSceneIdx + 1) % demo.timeline.length);
   }
 
   const tasks = (() => {
@@ -663,7 +654,7 @@
         .then(() => {
           showTrackInfo(activeTrack);
           startAudio();
-          setActiveScene(0);
+          setActiveSceneByIdx(0);
           //frameAdvancer = monotonousFrameAdvancer;
           frameAdvancer = beatConsciousFrameAdvancer
           blender = fadeOutToWhiteBlender.reset();

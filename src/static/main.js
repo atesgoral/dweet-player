@@ -163,6 +163,10 @@
 
   history.replaceState({}, '', encodeDemo(demo));
 
+  if (isNaN(demo.loaderScene.dweetId)) {
+    demo.loaderScene.dweetId = getRandomLoaderDweetId();
+  }
+
   function getUniqueDweetIdsFromTimeline(timeline) {
     return Object.keys(
       demo.timeline.reduce((idMap, scene) => {
@@ -631,7 +635,7 @@
     };
   })();
 
-  fetchDweet(demo.loaderScene.dweetId || getRandomLoaderDweetId())
+  fetchDweet(demo.loaderScene.dweetId)
     .then(setActiveDweet)
     .then(() => {
       tasks.add(getCanvas()

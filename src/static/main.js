@@ -1,4 +1,4 @@
-(() => {
+((createRuntime) => {
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
   const defaultDemoStr = '/demo/v1/*/701w,888,1231,739,933,855,683,1829t8h,433,135/'
@@ -662,44 +662,6 @@
     });
   }
 
-  // @todo pass in as arg to IIFE
-  function createRuntime() {
-    var $ = undefined; // Hide jQuery
-
-    var c = document.createElement('canvas');
-
-    c.width = 1920;
-    c.height = 1080;
-
-    var S = Math.sin;
-    var C = Math.cos;
-    var T = Math.tan;
-
-    function R(r,g,b,a) {
-      a = a === undefined ? 1 : a;
-      return "rgba("+(r|0)+","+(g|0)+","+(b|0)+","+a+")";
-    };
-
-    var x = c.getContext("2d");
-    var time = 0;
-    var frame = 0;
-
-    eval(`var u = function u(t) {\n${arguments[0].src}\n}`);
-
-    return Object.assign(arguments[0], {
-      canvas: c,
-      setFrame: (f) => {
-        frame = f;
-        time = frame / 60;
-
-        if (time * 60 | 0 == frame - 1) {
-          time += 0.000001;
-        }
-      },
-      render: () =>u(time)
-    });
-  }
-
   function setActiveScene(scene) {
     activeScene = scene;
 
@@ -781,4 +743,39 @@
         });
         //.then(() => advanceToNextScene());
     });
-})();
+})(function () {
+  let $ = void 0; // Hide global jQuery
+
+  let c = document.createElement('canvas');
+
+  c.width = 1920;
+  c.height = 1080;
+
+  let S = Math.sin;
+  let C = Math.cos;
+  let T = Math.tan;
+
+  function R(r,g,b,a) {
+    a = a === undefined ? 1 : a;
+    return "rgba("+(r|0)+","+(g|0)+","+(b|0)+","+a+")";
+  };
+
+  let x = c.getContext("2d");
+  let time = 0;
+  let frame = 0;
+
+  eval(`var u = function u(t) {\n${arguments[0].src}\n}`);
+
+  return Object.assign(arguments[0], {
+    canvas: c,
+    setFrame: (f) => {
+      frame = f;
+      time = frame / 60;
+
+      if (time * 60 | 0 == frame - 1) {
+        time += 0.000001;
+      }
+    },
+    render: () => u(time)
+  });
+});

@@ -1,29 +1,6 @@
 (() => {
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
-  const progressFrameAdvancer = {
-    done: 0,
-    fakeProgress: 0,
-    getFrame: function () {
-      this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
-      return this.fakeProgress * 60;
-    },
-    updateProgress: function (pending, total) {
-      this.done = 1 - pending / total;
-    }
-  };
-
-  const beatConsciousFrameAdvancer = {
-    frame: 0,
-    getFrame: function () {
-      const frame = this.frame;
-
-      this.frame += 1 + beat * 4;
-
-      return frame;
-    }
-  };
-
   const defaultDemoStr = '/demo/v1/*/701@2,888@1,1231~4,739!3,933,855,683,1829,433,135/'
     + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
@@ -36,6 +13,72 @@
     return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
   }
 
+  class MonotonousFrameAdvancer {
+    constructor() {
+      this.reset()
+    }
+
+    reset() {
+      this.frame = 0;
+    }
+
+    getFrame() {
+      return this.frame++;
+    }
+  }
+
+  class ProgressFrameAdvancer {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.done = 0;
+      this.fakeProgress = 0;
+    }
+
+    getFrame() {
+      this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
+      return this.fakeProgress * 60;
+    }
+
+    updateProgress(pending, total) {
+      this.done = 1 - pending / total;
+    }
+  }
+
+  class BeatBounceFrameAdvancer {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.frame = 0;
+    }
+
+    getFrame() {
+      return this.frame++ + beat * 4;
+    }
+  }
+
+  class BeatRushFrameAdvancer {
+    constructor() {
+      this.reset();
+    }
+
+    reset() {
+      this.frame = 0;
+    }
+
+    getFrame() {
+      const frame = this.frame;
+
+      this.frame += 1 + beat * 4;
+
+      return frame;
+    }
+  }
+
   class StubSceneAdvancer {
     reset() {}
     beat() {}
@@ -43,9 +86,9 @@
   }
 
   class ExactTimeSceneAdvancer {
-    constructor(seconds, callback) {
+    constructor(seconds, onAdvanceScene) {
       this.targetSeconds = seconds;
-      this.callback = callback;
+      this.onAdvanceScene = onAdvanceScene;
     }
 
     reset() {}
@@ -55,15 +98,15 @@
       const elapsedSeconds = frame / 60;
 
       if (elapsedSeconds >= this.targetSeconds) {
-        this.callback();
+        this.onAdvanceScene();
       }
     }
   }
 
   class ApproxTimeSceneAdvancer {
-    constructor(seconds, callback) {
+    constructor(seconds, onAdvanceScene) {
       this.targetSeconds = seconds;
-      this.callback = callback;
+      this.onAdvanceScene = onAdvanceScene;
     }
 
     reset() {
@@ -72,7 +115,7 @@
 
     beat() {
       if (this.elapsedSeconds >= this.targetSeconds) {
-        this.callback();
+        this.onAdvanceScene();
       }
     }
 
@@ -82,9 +125,9 @@
   }
 
   class ExactBeatSceneAdvancer {
-    constructor(beats, callback) {
+    constructor(beats, onAdvanceScene) {
       this.targetBeats = beats;
-      this.callback = callback;
+      this.onAdvanceScene = onAdvanceScene;
     }
 
     reset() {
@@ -95,12 +138,14 @@
       this.elapsedBeats++;
 
       if (this.elapsedBeats === this.targetBeats) {
-        this.callback();
+        this.onAdvanceScene();
       }
     }
 
     setFrame() {}
   }
+
+  const progressFrameAdvancer = new ProgressFrameAdvancer();
 
   function decodeDemo(s) {
     const tokens = /^\/demo\/v([^/])\/([^/]+)\/([^/]+)\/(.+)$/.exec(s);
@@ -142,7 +187,7 @@
 
           const sceneAdvancer = new SceneAdvancer(durationAmount, advanceToNextScene);
 
-          const frameAdvancer = beatConsciousFrameAdvancer;
+          const frameAdvancer = new BeatRushFrameAdvancer();
 
           return {
             dweetId,
@@ -189,15 +234,6 @@
       }, {})
     );
   }
-
-  /* Frame advancers */
-
-  const monotonousFrameAdvancer = {
-    frame: 0,
-    getFrame: function () {
-      return this.frame++;
-    }
-  };
 
   let beat = 0;
 
@@ -576,12 +612,12 @@
   function setActiveScene(scene) {
     activeScene = scene;
 
+    activeScene.frameAdvancer.reset(); // @todo unless retain flag set
     activeScene.sceneAdvancer.reset();
 
     blender = overwriteBlender;
 
     setActiveDweet(dweets[activeScene.dweetId]);
-    beatConsciousFrameAdvancer.frame = 0;
   }
 
   function setActiveSceneByIdx(idx) {
@@ -593,53 +629,58 @@
     setActiveSceneByIdx((activeSceneIdx + 1) % demo.timeline.length);
   }
 
-  const tasks = (() => {
-    let total = 0;
-    let pending = 0;
-    const taskList = [];
+  class TaskManager {
+    constructor(onUpdateProgress) {
+      this.total = 0;
+      this.pending = 0;
+      this.taskList = [];
+      this.onUpdateProgress = onUpdateProgress;
+    }
 
-    return {
-      add: (task) => {
-        total++;
-        pending++;
+    add(task) {
+      this.total++;
+      this.pending++;
 
-        taskList.push(task);
+      this.taskList.push(task);
 
-        return task
-          .then((result) => {
-            progressFrameAdvancer.updateProgress(--pending, total);
-            return result;
-          });
-      },
-      whenDone: () => Promise.all(taskList)
-    };
-  })();
+      return task
+        .then((result) => {
+          this.onUpdateProgress(--this.pending, this.total);
+          return result;
+        });
+    }
+
+    whenDone() {
+      return Promise.all(this.taskList);
+    }
+  }
+
+  const taskManager = new TaskManager((pending, total) => progressFrameAdvancer.updateProgress(pending, total));
 
   fetchDweet(demo.loaderScene.dweetId)
     .then(() => setActiveScene(demo.loaderScene))
     .then(() => {
-      tasks.add(getCanvas()
+      taskManager.add(getCanvas()
         .then(setupRendering)
         .then(setupUi)
         .then(() => showDweetInfo(activeDweet))
       );
 
-      tasks.add(fetchTrack(demo.trackUrl)
+      taskManager.add(fetchTrack(demo.trackUrl)
         .then(setActiveTrack)
         .then((track) => fetchAudio(track.audioUrl))
         .then(setupAudio)
       );
 
       getUniqueDweetIdsFromTimeline(demo.timeline)
-        .forEach((dweetId) => tasks.add(fetchDweet(dweetId)));
+        .forEach((dweetId) => taskManager.add(fetchDweet(dweetId)));
 
-      tasks.whenDone()
+      taskManager.whenDone()
         .then(() => pause(1000))
         .then(() => {
           showTrackInfo(activeTrack);
           startAudio();
           setActiveSceneByIdx(0);
-          frameAdvancer = beatConsciousFrameAdvancer;
           blender = fadeOutToWhiteBlender.reset();
 
           return pause(5000);

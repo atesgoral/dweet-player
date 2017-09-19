@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 
 const app = express();
 
-const cacheMaxAge = 60 * 5; // 5 minutes
+const cacheMaxAge = 60 * 60 * 24; // 1 day
 
 const fmaApiKey = process.env.FMA_API_KEY;
 

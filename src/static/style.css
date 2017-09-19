@@ -119,6 +119,17 @@ h1 {
   line-height: 2rem;
 }
 
+h1:after {
+  content: 'Alpha';
+  display: inline-block;
+  text-transform: lowercase;
+  color: hsl(15, 100%, 60%);
+  font-size: .75rem;
+  vertical-align: top;
+  transform: rotate(-10deg) translateY(-.5rem);
+  padding-left: .25rem;
+}
+
 h1 a:focus {
   color: #08f;
 }

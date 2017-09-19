@@ -196,9 +196,20 @@
     draw(ctx, dc) {
       const c = ctx.canvas;
       const split = 0.5;
-      ctx.drawImage(dc, 0, 0, dc.width * split, dc.width / sceneAspectRatio, 0, 0, c.width * split, c.height);
+      const dw = dc.width;
+      const dh = dc.width / sceneAspectRatio;
+
+      ctx.drawImage(
+        dc,
+        0, 0, dw * split, dh,
+        0, 0, c.width * split, c.height
+      );
       ctx.scale(-1, 1);
-      ctx.drawImage(dc, 0, 0, dc.width * split, dc.width / sceneAspectRatio, -c.width * split, 0, -c.width * split, c.height);
+      ctx.drawImage(
+        dc,
+        0, 0, dw * split, dh,
+        -c.width * split, 0, -c.width * split, c.height
+      );
       ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
   }
@@ -215,9 +226,20 @@
     draw(ctx, dc) {
       const c = ctx.canvas;
       const split = 0.5;
-      ctx.drawImage(dc, 0, 0, dc.width, dc.width / sceneAspectRatio * split, 0, 0, c.width, c.height * split);
+      const dw = dc.width;
+      const dh = dc.width / sceneAspectRatio;
+
+      ctx.drawImage(
+        dc,
+        0, 0, dw, dh * split,
+        0, 0, c.width, c.height * split
+      );
       ctx.scale(1, -1);
-      ctx.drawImage(dc, 0, 0, dc.width, dc.width / sceneAspectRatio * split, 0, -c.height * split, c.width, -c.height * split);
+      ctx.drawImage(
+        dc,
+        0, 0, dw, dh * split,
+        0, -c.height * split, c.width, -c.height * split
+      );
       ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
   }

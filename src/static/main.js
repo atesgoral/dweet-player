@@ -1,7 +1,7 @@
 (() => {
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
-  const defaultDemoStr = '/demo/v1/*/701@2,888@2,1231~4t8,739!3,933,855,683,1829,433,135/'
+  const defaultDemoStr = '/demo/v1/*/701w,888,1231,739,933,855,683,1829t8h,433,135/'
     + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
@@ -214,6 +214,88 @@
     }
   }
 
+  // class FadeOutToWhiteBlender {
+  //   constructor(factor) {
+  //     this.factor = factor;
+  //     this.reset();
+  //   }
+
+  //   reset() {
+  //     this.opacity = 0;
+  //   }
+
+  //   beforeDraw(ctx) {
+  //     ctx.globalAlpha = this.opacity;
+  //     ctx.fillStyle = '#ffffff';
+  //     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+  //     if (this.opacity < 1) {
+  //       this.opacity += 0.01;
+  //     }
+  //   }
+
+  //   afterDraw(ctx) {
+  //     ctx.globalAlpha = 1;
+  //   }
+  // }
+
+  // class FadeBlender {
+  //   constructor(factor) {
+  //     this.factor = factor;
+  //     this.reset();
+  //   }
+
+  //   reset() {
+  //     this.opacity = 0;
+  //   }
+
+  //   beforeDraw(ctx) {
+  //     ctx.globalAlpha = this.opacity;
+
+  //     if (this.opacity < 1) {
+  //       this.opacity += 0.01;
+  //     }
+  //   }
+
+  //   afterDraw(ctx) {
+  //     ctx.globalAlpha = 1;
+  //   }
+  // }
+
+  class WhiteFlashBlender {
+    constructor(factor) {
+      this.factor = factor;
+    }
+
+    beforeDraw(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    afterDraw(ctx) {
+      ctx.globalAlpha = beat;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  class BlackFlashBlender {
+    constructor(factor) {
+      this.factor = factor;
+    }
+
+    beforeDraw(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    afterDraw(ctx) {
+      ctx.globalAlpha = beat;
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      ctx.globalAlpha = 1;
+    }
+  }
+
   const progressFrameAdvancer = new ProgressFrameAdvancer();
 
   function decodeDemo(s) {
@@ -242,7 +324,7 @@
     const timeline = timelineStr
       .split(',')
       .map((s) => {
-        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?(?:([zvh])(\d+)?)?/.exec(s);
+        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?(?:([zvhwb])(\d+)?)?/.exec(s);
 
         if (tokens) {
           const dweetId = tokens[1];
@@ -271,6 +353,8 @@
             'z': ZoomBlender,
             'v': VerticalMirrorBlender,
             'h': HorizontalMirrorBlender,
+            'w': WhiteFlashBlender,
+            'b': BlackFlashBlender
           }[blenderType] || OverlayBlender;
 
           const blender = new Blender(blenderFactor);
@@ -327,56 +411,6 @@
   function beatHandler() {
     activeScene.sceneAdvancer.beat();
   }
-
-  const fadeOutToWhiteBlender = {
-    opacity: 0,
-    reset: function () {
-      this.opacity = 0;
-      return this;
-    },
-    beforeDraw: function (ctx) {
-      ctx.globalAlpha = this.opacity;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-      if (this.opacity < 1) {
-        this.opacity += 0.01;
-      }
-    },
-    afterDraw: function (ctx) {
-      ctx.globalAlpha = 1;
-    }
-  };
-
-  const fadeBlender = {
-    opacity: 0,
-    reset: function () {
-      this.opacity = 0;
-      return this;
-    },
-    beforeDraw: function (ctx) {
-      ctx.globalAlpha = this.opacity;
-
-      if (this.opacity < 1) {
-        this.opacity += 0.01;
-      }
-    },
-    afterDraw: function (ctx) {
-      ctx.globalAlpha = 1;
-    }
-  };
-
-  const flashToBeatBlender = {
-    beforeDraw: function (ctx) {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    },
-    afterDraw: function (ctx) {
-      ctx.globalAlpha = beat;
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      ctx.globalAlpha = 1;
-    }
-  };
 
   let dweets = {};
   let activeSceneIdx = 0;
@@ -667,6 +701,7 @@
 
     activeScene.frameAdvancer.reset(); // @todo unless retain flag set
     activeScene.sceneAdvancer.reset();
+    activeScene.blender.reset && activeScene.blender.reset();
 
     setActiveDweet(dweets[activeScene.dweetId]);
   }
@@ -734,8 +769,8 @@
           setActiveSceneByIdx(0);
           //blender = fadeOutToWhiteBlender.reset();
 
-          return pause(5000);
-        })
-        .then(() => advanceToNextScene());
+          //return pause(5000);
+        });
+        //.then(() => advanceToNextScene());
     });
 })();

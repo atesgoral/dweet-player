@@ -1,4 +1,8 @@
 ((createRuntime) => {
+  const sceneWidth = 1920;
+  const sceneHeight = 1080;
+  const sceneAspectRatio = sceneWidth / sceneHeight;
+
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
   const defaultDemoStr = '/demo/v1/*/701w,888,1231,739,933,855,683,1829t8h,433,135/'
@@ -191,9 +195,10 @@
 
     draw(ctx, dc) {
       const c = ctx.canvas;
-      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, 0, 0, c.width / 2, c.height);
+      const split = 0.5;
+      ctx.drawImage(dc, 0, 0, dc.width * split, dc.width / sceneAspectRatio, 0, 0, c.width * split, c.height);
       ctx.scale(-1, 1);
-      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, -c.width / 2, 0, -c.width / 2, c.height);
+      ctx.drawImage(dc, 0, 0, dc.width * split, dc.width / sceneAspectRatio, -c.width * split, 0, -c.width * split, c.height);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
   }
@@ -209,9 +214,10 @@
 
     draw(ctx, dc) {
       const c = ctx.canvas;
-      ctx.drawImage(dc, 0, 0, dc.width, dc.width * 1080 / 1920 / 2, 0, 0, c.width, c.height / 2);
+      const split = 0.5;
+      ctx.drawImage(dc, 0, 0, dc.width, dc.width / sceneAspectRatio * split, 0, 0, c.width, c.height * split);
       ctx.scale(1, -1);
-      ctx.drawImage(dc, 0, 0, dc.width, dc.width * 1080 / 1920 / 2, 0, -c.height / 2, c.width, -c.height / 2);
+      ctx.drawImage(dc, 0, 0, dc.width, dc.width / sceneAspectRatio * split, 0, -c.height * split, c.width, -c.height * split);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
   }
@@ -449,8 +455,8 @@
   }
 
   function setupRendering(canvas) {
-    canvas.width = 1920;
-    canvas.height = 1080;
+    canvas.width = sceneWidth;
+    canvas.height = sceneHeight;
 
     const ctx = canvas.getContext('2d');
 
@@ -478,7 +484,7 @@
       } else {
         ctx.drawImage(
           dc,
-          0, 0, dc.width, dc.width * 1080 / 1920,
+          0, 0, dc.width, dc.width / sceneAspectRatio,
           0, 0, canvas.width, canvas.height
         );
       }
@@ -644,8 +650,7 @@
 
   function fetchDweet(id) {
     return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
-      .then(createRuntime)
-      .then((dweet) => dweets[id] = dweet);
+      .then((dweet) => dweets[id] = createRuntime(dweet, sceneWidth, sceneHeight));
 
   }
 
@@ -748,8 +753,8 @@
 
   let c = document.createElement('canvas');
 
-  c.width = 1920;
-  c.height = 1080;
+  c.width = arguments[1];
+  c.height = arguments[2];
 
   let S = Math.sin;
   let C = Math.cos;

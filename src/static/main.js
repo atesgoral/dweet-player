@@ -195,7 +195,7 @@
 
     draw(ctx, dc) {
       const c = ctx.canvas;
-      const split = 0.5;
+      const split = this.factor / 10;
       const dw = dc.width;
       const dh = dc.width / sceneAspectRatio;
 
@@ -225,7 +225,7 @@
 
     draw(ctx, dc) {
       const c = ctx.canvas;
-      const split = 0.5;
+      const split = this.factor / 10;
       const dw = dc.width;
       const dh = dc.width / sceneAspectRatio;
 

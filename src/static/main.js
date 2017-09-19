@@ -1,7 +1,7 @@
 (() => {
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
-  const defaultDemoStr = '/demo/v1/*/701@2,888@1,1231~4,739!3,933,855,683,1829,433,135/'
+  const defaultDemoStr = '/demo/v1/*/701@2,888@2,1231~4t8,739!3,933,855,683,1829,433,135/'
     + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
@@ -48,7 +48,8 @@
   }
 
   class BeatBounceFrameAdvancer {
-    constructor() {
+    constructor(factor) {
+      this.factor = factor;
       this.reset();
     }
 
@@ -57,12 +58,13 @@
     }
 
     getFrame() {
-      return this.frame++ + beat * 4;
+      return this.frame++ + beat * this.factor;
     }
   }
 
   class BeatRushFrameAdvancer {
-    constructor() {
+    constructor(factor) {
+      this.factor = factor;
       this.reset();
     }
 
@@ -73,7 +75,7 @@
     getFrame() {
       const frame = this.frame;
 
-      this.frame += 1 + beat * 4;
+      this.frame += 1 + beat * this.factor;
 
       return frame;
     }
@@ -172,22 +174,30 @@
     const timeline = timelineStr
       .split(',')
       .map((s) => {
-        const tokens = /^(\d+)(?:([@~!])(\d+))?/.exec(s);
+        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?/.exec(s);
 
         if (tokens) {
           const dweetId = tokens[1];
-          const durationType = tokens[2] || '~';
-          const durationAmount = parseFloat(tokens[3] || '5');
+          const sceneAdvancerType = tokens[2] || '~';
+          const sceneAdvancerFactor = parseFloat(tokens[3] || '5');
+          const frameAdvancerType = tokens[4] || 'm';
+          const frameAdvancerFactor = parseFloat(tokens[5] || '4');
+
+          console.log(frameAdvancerType, frameAdvancerFactor);
 
           const SceneAdvancer = {
             '@': ExactTimeSceneAdvancer,
-            '~': ApproxTimeSceneAdvancer,
             '!': ExactBeatSceneAdvancer
-          }[durationType];
+          }[sceneAdvancerType] || ApproxTimeSceneAdvancer;
 
-          const sceneAdvancer = new SceneAdvancer(durationAmount, advanceToNextScene);
+          const sceneAdvancer = new SceneAdvancer(sceneAdvancerFactor, advanceToNextScene);
 
-          const frameAdvancer = new BeatRushFrameAdvancer();
+          const FrameAdvancer = {
+            't': BeatRushFrameAdvancer,
+            'T': BeatBounceFrameAdvancer
+          }[frameAdvancerType] || MonotonousFrameAdvancer;
+
+          const frameAdvancer = new FrameAdvancer(frameAdvancerFactor);
 
           return {
             dweetId,

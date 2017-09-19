@@ -13,6 +13,8 @@
     return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
   }
 
+  /* Frame advancers */
+
   class MonotonousFrameAdvancer {
     constructor() {
       this.reset()
@@ -81,6 +83,8 @@
     }
   }
 
+  /* Scene advancers */
+
   class StubSceneAdvancer {
     reset() {}
     beat() {}
@@ -147,6 +151,69 @@
     setFrame() {}
   }
 
+  /* Blenders */
+
+  class OverlayBlender {
+    beforeDraw(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+  }
+
+  class ZoomBlender {
+    constructor(factor) {
+      this.factor = factor;
+    }
+
+    beforeDraw(ctx) {
+      const w = ctx.canvas.width;
+      const h = ctx.canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.translate(-w * beat / 4, -h * beat / 4);
+      ctx.scale(1 + beat / 2, 1 + beat / 2);
+    }
+
+    afterDraw(ctx) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+  }
+
+  class VerticalMirrorBlender {
+    constructor(factor) {
+      this.factor = factor;
+    }
+
+    beforeDraw(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    draw(ctx, dc) {
+      const c = ctx.canvas;
+      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, 0, 0, c.width / 2, c.height);
+      ctx.scale(-1, 1);
+      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, -c.width / 2, 0, -c.width / 2, c.height);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+  }
+
+  class HorizontalMirrorBlender {
+    constructor(factor) {
+      this.factor = factor;
+    }
+
+    beforeDraw(ctx) {
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    }
+
+    draw(ctx, dc) {
+      const c = ctx.canvas;
+      ctx.drawImage(dc, 0, 0, dc.width, dc.width * 1080 / 1920 / 2, 0, 0, c.width, c.height / 2);
+      ctx.scale(1, -1);
+      ctx.drawImage(dc, 0, 0, dc.width, dc.width * 1080 / 1920 / 2, 0, -c.height / 2, c.width, -c.height / 2);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+  }
+
   const progressFrameAdvancer = new ProgressFrameAdvancer();
 
   function decodeDemo(s) {
@@ -168,22 +235,23 @@
     const loaderScene = {
       dweetId: loaderDweetId,
       sceneAdvancer: new StubSceneAdvancer(),
-      frameAdvancer: progressFrameAdvancer
+      frameAdvancer: progressFrameAdvancer,
+      blender: new OverlayBlender()
     };
 
     const timeline = timelineStr
       .split(',')
       .map((s) => {
-        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?/.exec(s);
+        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?(?:([zvh])(\d+)?)?/.exec(s);
 
         if (tokens) {
           const dweetId = tokens[1];
           const sceneAdvancerType = tokens[2] || '~';
           const sceneAdvancerFactor = parseFloat(tokens[3] || '5');
           const frameAdvancerType = tokens[4] || 'm';
-          const frameAdvancerFactor = parseFloat(tokens[5] || '4');
-
-          console.log(frameAdvancerType, frameAdvancerFactor);
+          const frameAdvancerFactor = parseFloat(tokens[5] || '5');
+          const blenderType = tokens[6] || 'o';
+          const blenderFactor = parseFloat(tokens[7] || '5');
 
           const SceneAdvancer = {
             '@': ExactTimeSceneAdvancer,
@@ -199,10 +267,19 @@
 
           const frameAdvancer = new FrameAdvancer(frameAdvancerFactor);
 
+          const Blender = {
+            'z': ZoomBlender,
+            'v': VerticalMirrorBlender,
+            'h': HorizontalMirrorBlender,
+          }[blenderType] || OverlayBlender;
+
+          const blender = new Blender(blenderFactor);
+
           return {
             dweetId,
             sceneAdvancer,
-            frameAdvancer
+            frameAdvancer,
+            blender
           };
         } else {
           console.error('Invalid scene', s);
@@ -251,14 +328,6 @@
     activeScene.sceneAdvancer.beat();
   }
 
-  /* Blenders */
-
-  const overwriteBlender = {
-    beforeDraw: function (ctx) {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    }
-  };
-
   const fadeOutToWhiteBlender = {
     opacity: 0,
     reset: function () {
@@ -297,33 +366,6 @@
     }
   };
 
-  const zoomToBeatBlender = {
-    beforeDraw: function (ctx) {
-      const w = ctx.canvas.width;
-      const h = ctx.canvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.translate(-w * beat / 4, -h * beat / 4);
-      ctx.scale(1 + beat / 2, 1 + beat / 2);
-    },
-    afterDraw: function (ctx) {
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-    }
-  };
-
-  const horizontalMirrorBlender = {
-    beforeDraw: function (ctx) {
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    },
-    draw: function (ctx, dc) {
-      const c = ctx.canvas;
-      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, 0, 0, c.width / 2, c.height);
-      ctx.scale(-1, 1);
-      ctx.drawImage(dc, 0, 0, dc.width / 2, dc.width * 1080 / 1920, -c.width / 2, 0, -c.width / 2, c.height);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-    }
-  };
-
   const flashToBeatBlender = {
     beforeDraw: function (ctx) {
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -335,8 +377,6 @@
       ctx.globalAlpha = 1;
     }
   };
-
-  let blender = overwriteBlender;
 
   let dweets = {};
   let activeSceneIdx = 0;
@@ -380,6 +420,7 @@
       requestAnimationFrame(render);
 
       const frame = activeScene.frameAdvancer.getFrame();
+
       activeDweet.setFrame(frame);
 
       try {
@@ -387,6 +428,8 @@
       } catch (e) {
         console.error(e);
       }
+
+      const blender = activeScene.blender;
 
       blender.beforeDraw && blender.beforeDraw(ctx);
 
@@ -625,8 +668,6 @@
     activeScene.frameAdvancer.reset(); // @todo unless retain flag set
     activeScene.sceneAdvancer.reset();
 
-    blender = overwriteBlender;
-
     setActiveDweet(dweets[activeScene.dweetId]);
   }
 
@@ -691,7 +732,7 @@
           showTrackInfo(activeTrack);
           startAudio();
           setActiveSceneByIdx(0);
-          blender = fadeOutToWhiteBlender.reset();
+          //blender = fadeOutToWhiteBlender.reset();
 
           return pause(5000);
         })

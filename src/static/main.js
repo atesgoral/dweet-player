@@ -5,7 +5,7 @@
 
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
-  const defaultDemoStr = '/demo/v1/*/701w,888,1231,739,933,855,683,1829t8h,433,135/'
+  const defaultDemoStr = '/demo/v1/*/3171@4,3171~7w=,3167~10T8,855z7,855th=,855tv=,1829~8t,1231w,1829~14th7=,433~6b,915~8z8,2083T,2083th,3166~8tv,3143~8b,3144~10t7,1853~10,1994~5,1994~8tv,2561~6,631@15/'
     + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',

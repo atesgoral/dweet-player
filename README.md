@@ -35,7 +35,7 @@ Each scene starts with a dweet ID, followed by a combination of these optional c
 - A duration specifier
 - A time warping specifier
 - A "blender" (bad name for what it actually does)
-- A "=" at the very end to make the scene contiguos with a prior appearance of the same dweet i.e. dweet frame/t values continue increasing. By default, each dweet's runtime is reset every time they're shown.
+- A "=" at the very end to make the scene contiguous with a prior appearance of the same dweet i.e. dweet frame/t values continue increasing. By default, each dweet's runtime is reset every time they're shown.
 
 Duration specifiers can be:
 - Exact time: `@[<seconds>]` - Runs the dweet for exactly the specified amount of seconds. When omitted, 5 seconds is the default.

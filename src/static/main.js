@@ -324,7 +324,7 @@
     const timeline = timelineStr
       .split(',')
       .map((s) => {
-        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?(?:([zvhwb])(\d+)?)?/.exec(s);
+        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?(?:([zvhwb])(\d+)?)?(=)?/.exec(s);
 
         if (tokens) {
           const dweetId = tokens[1];
@@ -334,6 +334,7 @@
           const frameAdvancerFactor = parseFloat(tokens[5] || '5');
           const blenderType = tokens[6] || 'o';
           const blenderFactor = parseFloat(tokens[7] || '5');
+          const isContinuous = !!tokens[8];
 
           const SceneAdvancer = {
             '@': ExactTimeSceneAdvancer,
@@ -363,7 +364,8 @@
             dweetId,
             sceneAdvancer,
             frameAdvancer,
-            blender
+            blender,
+            isContinuous
           };
         } else {
           console.error('Invalid scene', s);
@@ -699,8 +701,12 @@
   function setActiveScene(scene) {
     activeScene = scene;
 
-    activeScene.frameAdvancer.reset(); // @todo unless retain flag set
     activeScene.sceneAdvancer.reset();
+
+    if (!activeScene.isContinuous) {
+      activeScene.frameAdvancer.reset();
+    }
+
     activeScene.blender.reset && activeScene.blender.reset();
 
     setActiveDweet(dweets[activeScene.dweetId]);

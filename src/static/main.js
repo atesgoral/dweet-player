@@ -168,9 +168,11 @@
       const w = ctx.canvas.width;
       const h = ctx.canvas.height;
 
+      const zoom = beat * this.factor / 100;
+
       ctx.clearRect(0, 0, w, h);
-      ctx.translate(-w * beat / 4, -h * beat / 4);
-      ctx.scale(1 + beat / 2, 1 + beat / 2);
+      ctx.translate(-w * zoom / 2, -h * zoom / 2);
+      ctx.scale(1 + zoom, 1 + zoom);
     }
 
     afterDraw(ctx) {

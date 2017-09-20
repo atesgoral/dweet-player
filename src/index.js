@@ -10,6 +10,12 @@ const cacheMaxAge = 60 * 60 * 24; // 1 day
 
 const fmaApiKey = process.env.FMA_API_KEY;
 
+function getCcLicenseTitleFromUrl(url) {
+  const tokens = /https?:\/\/creativecommons.org\/licenses\/([^/]+)\/([^/]+)/.exec(url);
+
+  return tokens && `CC ${tokens[1].toUpperCase().replace(/-/g, ' ')} ${tokens[2]}`;
+}
+
 app.get('/api/dweets/:id', (req, res, next) => {
   const id = parseInt(req.params.id, 10);
 
@@ -21,8 +27,11 @@ app.get('/api/dweets/:id', (req, res, next) => {
 
       dweet = {
         id,
+        dweetUrl: `https://www.dwitter.net/d/${id}`,
         author,
-        src
+        authorUrl: `https://www.dwitter.net/u/${author}`,
+        src,
+        length: src.length
       };
 
       res.set('Cache-Control', `public, max-age=${cacheMaxAge}`);
@@ -63,7 +72,7 @@ app.get('/api/tracks/:trackUrl', (req, res, next) => {
         trackUrl,
         artistName: track.artist_name,
         artistUrl: track.artist_url,
-        licenseTitle: track.license_title,
+        licenseTitle: getCcLicenseTitleFromUrl(track.license_url) || track.license_title,
         licenseUrl: track.license_url
       });
     })

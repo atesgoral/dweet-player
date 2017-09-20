@@ -458,16 +458,25 @@
     return new Promise((resolve) => $(() => resolve($("#c").get(0))));
   }
 
+  // @todo remove this when API cache purged
+  function getCcLicenseTitleFromUrl(url) {
+    const tokens = /https?:\/\/creativecommons.org\/licenses\/([^/]+)\/([^/]+)/.exec(url);
+
+    return tokens && `CC ${tokens[1].toUpperCase().replace(/-/g, ' ')} ${tokens[2]}`;
+  }
+
   function showTrackInfo(track) {
     const tpl = $('#track-info-tpl').html();
-    const params = track;
+    const params = Object.assign(track, { // @todo remove this when API cache purged
+      licenseTitle: getCcLicenseTitleFromUrl(track.licenseUrl) || track.licenseTitle
+    });
 
     $('#track-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
   }
 
   function showDweetInfo(dweet) {
     const tpl = $('#dweet-info-tpl').html();
-    const params = Object.assign({
+    const params = Object.assign({ // @todo remove this when API cache purged
       dweetUrl: `https://www.dwitter.net/d/${dweet.id}`,
       authorUrl: `https://www.dwitter.net/u/${dweet.author}`,
       length: dweet.src.length

@@ -17,6 +17,13 @@
     return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
   }
 
+  function escapeHtml(html) {
+      const text = document.createTextNode(html);
+      const div = document.createElement('div');
+      div.appendChild(text);
+      return div.innerHTML;
+  }
+
   /* Frame advancers */
 
   class MonotonousFrameAdvancer {
@@ -467,7 +474,7 @@
 
   function showTrackInfo(track) {
     const tpl = $('#track-info-tpl').html();
-    const params = Object.assign(track, { // @todo remove this when API cache purged
+    const params = Object.assign({}, track, { // @todo remove this when API cache purged
       licenseTitle: getCcLicenseTitleFromUrl(track.licenseUrl) || track.licenseTitle
     });
 
@@ -480,7 +487,9 @@
       dweetUrl: `https://www.dwitter.net/d/${dweet.id}`,
       authorUrl: `https://www.dwitter.net/u/${dweet.author}`,
       length: dweet.src.length
-    }, dweet);
+    }, dweet, {
+      src: escapeHtml(dweet.src)
+    });
 
     $('#dweet-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
   }

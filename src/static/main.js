@@ -18,10 +18,10 @@
   }
 
   function escapeHtml(html) {
-      const text = document.createTextNode(html);
-      const div = document.createElement('div');
-      div.appendChild(text);
-      return div.innerHTML;
+    const text = document.createTextNode(html);
+    const div = document.createElement('div');
+    div.appendChild(text);
+    return div.innerHTML;
   }
 
   /* Frame advancers */

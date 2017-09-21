@@ -84,11 +84,15 @@
     }
 
     reset() {
-      this.frame = 0;
+      this.startDelay = null;
     }
 
     getFrame(elapsed) {
-      return this.frame + elapsed * FPS;
+      if (this.startDelay === null) {
+        this.startDelay = elapsed;
+      }
+
+      return (elapsed - this.startDelay) * FPS;
     }
   }
 
@@ -119,11 +123,15 @@
     }
 
     reset() {
-      this.frame = 0;
+      this.startDelay = null;
     }
 
     getFrame(elapsed) {
-      return this.frame + elapsed * FPS + beat * this.factor;
+      if (this.startDelay === null) {
+        this.startDelay = elapsed;
+      }
+
+      return (elapsed - this.startDelay) * FPS + beat * this.factor;
     }
   }
 
@@ -134,11 +142,15 @@
     }
 
     reset() {
-      this.frame = 0;
+      this.startDelay = null;
     }
 
     getFrame(elapsed) {
-      return this.frame + elapsed * FPS + beat * this.factor;
+      if (this.startDelay === null) {
+        this.startDelay = elapsed;
+      }
+
+      return (elapsed - this.startDelay) * FPS + beat * this.factor;
     }
   }
 

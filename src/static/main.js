@@ -1,12 +1,12 @@
 ((createRuntime) => {
-  const sceneWidth = 1920;
-  const sceneHeight = 1080;
-  const sceneAspectRatio = sceneWidth / sceneHeight;
-  const fps = 60;
+  const SCENE_WIDTH = 1920;
+  const SCENE_HEIGHT = 1080;
+  const SCENE_ASPECT_RATIO = SCENE_WIDTH / SCENE_HEIGHT;
+  const FPS = 60;
 
-  const defaultLoaderDweetIds = [ 3096, 3097 ];
+  const DEFAULT_LOADER_DWEET_IDS = [ 3096, 3097 ];
 
-  const defaultDemoStr = '/demo/v1/*/3171@4,3171~7w=,3167~10T8,855z7,855th=,855tv=,1829~8t,1231w,1829~14th7=,433~6b,915~8z8,2083T,2083th,3166~8tv,3143~8b,3144~10t7,1853~10,1994~5,1994~8tv,2561~6,631@15/'
+  const DEFAULT_DEMO_STR = '/demo/v1/*/3171@4,3171~7w=,3167~10T8,855z7,855th=,855tv=,1829~8t,1231w,1829~14th7=,433~6b,915~8z8,2083T,2083th,3166~8tv,3143~8b,3144~10t7,1853~10,1994~5,1994~8tv,2561~6,631@15/'
     + [
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
@@ -17,7 +17,7 @@
   /* Utils */
 
   function getRandomLoaderDweetId() {
-    return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
+    return DEFAULT_LOADER_DWEET_IDS[DEFAULT_LOADER_DWEET_IDS.length * Math.random() | 0];
   }
 
   function getUniqueDweetIdsFromTimeline(timeline) {
@@ -59,7 +59,7 @@
 
   function fetchDweet(id) {
     return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
-      .then((dweet) => dweets[id] = createRuntime(dweet, sceneWidth, sceneHeight));
+      .then((dweet) => dweets[id] = createRuntime(dweet, SCENE_WIDTH, SCENE_HEIGHT));
 
   }
 
@@ -88,7 +88,7 @@
     }
 
     getFrame(elapsed) {
-      return this.frame + elapsed * fps;
+      return this.frame + elapsed * FPS;
     }
   }
 
@@ -104,7 +104,7 @@
 
     getFrame() {
       this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
-      return this.fakeProgress * fps;
+      return this.fakeProgress * FPS;
     }
 
     updateProgress(pending, total) {
@@ -123,7 +123,7 @@
     }
 
     getFrame(elapsed) {
-      return this.frame + elapsed * fps + beat * this.factor;
+      return this.frame + elapsed * FPS + beat * this.factor;
     }
   }
 
@@ -138,7 +138,7 @@
     }
 
     getFrame(elapsed) {
-      return this.frame + elapsed * fps + beat * this.factor;
+      return this.frame + elapsed * FPS + beat * this.factor;
     }
   }
 
@@ -160,7 +160,7 @@
     beat() {}
 
     setFrame(frame) {
-      const elapsedSeconds = frame / fps;
+      const elapsedSeconds = frame / FPS;
 
       if (elapsedSeconds >= this.targetSeconds) {
         this.onAdvanceScene();
@@ -185,7 +185,7 @@
     }
 
     setFrame(frame) {
-      this.elapsedSeconds = frame / fps;
+      this.elapsedSeconds = frame / FPS;
     }
   }
 
@@ -252,7 +252,7 @@
       const c = ctx.canvas;
       const split = this.factor / 10;
       const dw = dc.width;
-      const dh = dc.width / sceneAspectRatio;
+      const dh = dc.width / SCENE_ASPECT_RATIO;
 
       ctx.drawImage(
         dc,
@@ -282,7 +282,7 @@
       const c = ctx.canvas;
       const split = this.factor / 10;
       const dw = dc.width;
-      const dh = dc.width / sceneAspectRatio;
+      const dh = dc.width / SCENE_ASPECT_RATIO;
 
       ctx.drawImage(
         dc,
@@ -516,8 +516,8 @@
   }
 
   if (!demo) {
-    demo = decodeDemo(defaultDemoStr);
-    history.replaceState({}, '', defaultDemoStr);
+    demo = decodeDemo(DEFAULT_DEMO_STR);
+    history.replaceState({}, '', DEFAULT_DEMO_STR);
   }
 
   if (isNaN(demo.loaderScene.dweetId)) {
@@ -529,8 +529,8 @@
   }
 
   function setupRendering(canvas) {
-    canvas.width = sceneWidth;
-    canvas.height = sceneHeight;
+    canvas.width = SCENE_WIDTH;
+    canvas.height = SCENE_HEIGHT;
 
     const ctx = canvas.getContext('2d');
 
@@ -558,7 +558,7 @@
       } else {
         ctx.drawImage(
           dc,
-          0, 0, dc.width, dc.width / sceneAspectRatio,
+          0, 0, dc.width, dc.width / SCENE_ASPECT_RATIO,
           0, 0, canvas.width, canvas.height
         );
       }

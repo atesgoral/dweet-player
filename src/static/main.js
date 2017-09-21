@@ -386,6 +386,8 @@
 
   const progressFrameAdvancer = new ProgressFrameAdvancer();
 
+  /* Decoding */
+
   function decodeDemo(s) {
     const tokens = /^\/demo\/v([^/])\/([^/]+)\/([^/]+)\/(.+)$/.exec(s);
 
@@ -468,36 +470,7 @@
     };
   }
 
-  let demo = null;
-
-  if (location.pathname !== '/') {
-    demo = decodeDemo(location.pathname);
-
-    if (!demo) {
-      console.warn('Could not decode demo', location.pathname);
-    }
-  }
-
-  if (!demo) {
-    demo = decodeDemo(defaultDemoStr);
-    history.replaceState({}, '', defaultDemoStr);
-  }
-
-  if (isNaN(demo.loaderScene.dweetId)) {
-    demo.loaderScene.dweetId = getRandomLoaderDweetId();
-  }
-
-  let beat = 0;
-
-  function beatHandler() {
-    activeScene.sceneAdvancer.beat();
-  }
-
-  let dweets = {};
-  let activeSceneIdx = 0;
-  let activeScene = null;
-  let activeTrack = null;
-  let activeDweet = null;
+  /* UI */
 
   function getCanvas() {
     return new Promise((resolve) => $(() => resolve($("#c").get(0))));
@@ -523,6 +496,38 @@
     });
 
     $('#dweet-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
+  }
+
+  /* Initialization */
+
+  let demo = null;
+  let dweets = {};
+  let activeSceneIdx = 0;
+  let activeScene = null;
+  let activeTrack = null;
+  let activeDweet = null;
+
+  let beat = 0;
+
+  if (location.pathname !== '/') {
+    demo = decodeDemo(location.pathname);
+
+    if (!demo) {
+      console.warn('Could not decode demo', location.pathname);
+    }
+  }
+
+  if (!demo) {
+    demo = decodeDemo(defaultDemoStr);
+    history.replaceState({}, '', defaultDemoStr);
+  }
+
+  if (isNaN(demo.loaderScene.dweetId)) {
+    demo.loaderScene.dweetId = getRandomLoaderDweetId();
+  }
+
+  function beatHandler() {
+    activeScene.sceneAdvancer.beat();
   }
 
   function setupRendering(canvas) {
@@ -586,10 +591,6 @@
     }
 
     render();
-  }
-
-  function decodeAudio(data, ctx) {
-    return new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
   }
 
   let source = null;

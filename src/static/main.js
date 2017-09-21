@@ -742,6 +742,10 @@
     activeScene.blender.reset && activeScene.blender.reset();
 
     setActiveDweet(dweets[activeScene.dweetId]);
+
+    if (!activeDweet.canvas || !activeScene.isContinuous) {
+      activeDweet.reset();
+    }
   }
 
   function setActiveSceneByIdx(idx) {
@@ -811,31 +815,45 @@
         });
         //.then(() => advanceToNextScene());
     });
-})(function () {
+})(function () { // No named arguments to keep arguments away from u
   let $ = void 0; // Hide global jQuery
 
-  let c = document.createElement('canvas');
+  let c = null;
 
-  c.width = arguments[1];
-  c.height = arguments[2];
+  let S = null;
+  let C = null;
+  let T = null;
 
-  let S = Math.sin;
-  let C = Math.cos;
-  let T = Math.tan;
+  let R = null;
 
-  function R(r,g,b,a) {
-    a = a === undefined ? 1 : a;
-    return "rgba("+(r|0)+","+(g|0)+","+(b|0)+","+a+")";
-  };
+  let x = null;
+  let time = null;
+  let frame = null;
 
-  let x = c.getContext("2d");
-  let time = 0;
-  let frame = 0;
+  let u = null;
 
-  eval(`var u = function u(t) {\n${arguments[0].src}\n}`);
+  return ((dweet, width, height) => Object.assign(dweet, {
+    reset: function () {
+      c = this.canvas = document.createElement('canvas');
 
-  return Object.assign(arguments[0], {
-    canvas: c,
+      c.width = width;
+      c.height = height;
+
+      S = Math.sin;
+      C = Math.cos;
+      T = Math.tan;
+
+      R = function R(r,g,b,a) {
+        a = a === undefined ? 1 : a;
+        return "rgba("+(r|0)+","+(g|0)+","+(b|0)+","+a+")";
+      };
+
+      x = c.getContext("2d");
+      time = 0;
+      frame = 0;
+
+      eval(`u = function u(t) {\n${dweet.src}\n}`);
+    },
     setFrame: (f) => {
       frame = f;
       time = frame / 60;
@@ -845,5 +863,5 @@
       }
     },
     render: () => u(time)
-  });
+  }))(arguments[0], arguments[1], arguments[2]);
 });

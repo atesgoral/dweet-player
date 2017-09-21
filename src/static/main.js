@@ -90,6 +90,7 @@
     getFrame(elapsed) {
       if (this.startDelay === null) {
         this.startDelay = elapsed;
+        return 0;
       }
 
       return (elapsed - this.startDelay) * FPS;
@@ -129,6 +130,7 @@
     getFrame(elapsed) {
       if (this.startDelay === null) {
         this.startDelay = elapsed;
+        return 0;
       }
 
       return (elapsed - this.startDelay) * FPS + beat * this.factor;
@@ -148,6 +150,7 @@
     getFrame(elapsed) {
       if (this.startDelay === null) {
         this.startDelay = elapsed;
+        return 0;
       }
 
       return (elapsed - this.startDelay) * FPS + beat * this.factor;

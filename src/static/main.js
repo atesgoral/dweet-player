@@ -13,8 +13,19 @@
       'http://freemusicarchive.org/music/Pierlo/Olivetti_Prodest/05_San_Diego_Cruisin',
     ][0];
 
+  /* Utils */
+
   function getRandomLoaderDweetId() {
     return defaultLoaderDweetIds[defaultLoaderDweetIds.length * Math.random() | 0];
+  }
+
+  function getUniqueDweetIdsFromTimeline(timeline) {
+    return Object.keys(
+      demo.timeline.reduce((idMap, scene) => {
+        idMap[scene.dweetId] = 1;
+        return idMap;
+      }, {})
+    );
   }
 
   function escapeHtml(html) {
@@ -22,6 +33,46 @@
     const div = document.createElement('div');
     div.appendChild(text);
     return div.innerHTML;
+  }
+
+  // @todo remove this when API cache purged
+  function getCcLicenseTitleFromUrl(url) {
+    const tokens = /https?:\/\/creativecommons.org\/licenses\/([^/]+)\/([^/]+)/.exec(url);
+
+    return tokens && `CC ${tokens[1].toUpperCase().replace(/-/g, ' ')} ${tokens[2]}`;
+  }
+
+  function pause(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function decodeAudio(data, ctx) {
+    return new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
+  }
+
+  /* Fetching */
+
+  function fetchTrack(url) {
+    return $.ajax(`/api/tracks/${encodeURIComponent(url)}`, { dataType: 'json' });
+  }
+
+  function fetchDweet(id) {
+    return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
+      .then((dweet) => dweets[id] = createRuntime(dweet, sceneWidth, sceneHeight));
+
+  }
+
+  function fetchAudio(url) {
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+
+      request.open('GET', `/api/proxy/${encodeURIComponent(url)}`, true);
+      request.responseType = 'arraybuffer';
+
+      request.onload = () => resolve(request.response);
+
+      request.send();
+    });
   }
 
   /* Frame advancers */
@@ -436,15 +487,6 @@
     demo.loaderScene.dweetId = getRandomLoaderDweetId();
   }
 
-  function getUniqueDweetIdsFromTimeline(timeline) {
-    return Object.keys(
-      demo.timeline.reduce((idMap, scene) => {
-        idMap[scene.dweetId] = 1;
-        return idMap;
-      }, {})
-    );
-  }
-
   let beat = 0;
 
   function beatHandler() {
@@ -457,19 +499,8 @@
   let activeTrack = null;
   let activeDweet = null;
 
-  function pause(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
   function getCanvas() {
     return new Promise((resolve) => $(() => resolve($("#c").get(0))));
-  }
-
-  // @todo remove this when API cache purged
-  function getCcLicenseTitleFromUrl(url) {
-    const tokens = /https?:\/\/creativecommons.org\/licenses\/([^/]+)\/([^/]+)/.exec(url);
-
-    return tokens && `CC ${tokens[1].toUpperCase().replace(/-/g, ' ')} ${tokens[2]}`;
   }
 
   function showTrackInfo(track) {
@@ -682,29 +713,6 @@
   function setActiveDweet(dweet) {
     showDweetInfo(dweet);
     return activeDweet = dweet;
-  }
-
-  function fetchTrack(url) {
-    return $.ajax(`/api/tracks/${encodeURIComponent(url)}`, { dataType: 'json' });
-  }
-
-  function fetchDweet(id) {
-    return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
-      .then((dweet) => dweets[id] = createRuntime(dweet, sceneWidth, sceneHeight));
-
-  }
-
-  function fetchAudio(url) {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-
-      request.open('GET', `/api/proxy/${encodeURIComponent(url)}`, true);
-      request.responseType = 'arraybuffer';
-
-      request.onload = () => resolve(request.response);
-
-      request.send();
-    });
   }
 
   function setActiveScene(scene) {

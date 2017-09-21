@@ -2,6 +2,7 @@
   const sceneWidth = 1920;
   const sceneHeight = 1080;
   const sceneAspectRatio = sceneWidth / sceneHeight;
+  const fps = 60;
 
   const defaultLoaderDweetIds = [ 3096, 3097 ];
 
@@ -86,8 +87,8 @@
       this.frame = 0;
     }
 
-    getFrame() {
-      return this.frame++;
+    getFrame(elapsed) {
+      return this.frame + elapsed * fps;
     }
   }
 
@@ -103,7 +104,7 @@
 
     getFrame() {
       this.fakeProgress += (this.done - this.fakeProgress) / ((1 - this.done) * 90 + 10);
-      return this.fakeProgress * 60;
+      return this.fakeProgress * fps;
     }
 
     updateProgress(pending, total) {
@@ -121,8 +122,8 @@
       this.frame = 0;
     }
 
-    getFrame() {
-      return this.frame++ + beat * this.factor;
+    getFrame(elapsed) {
+      return this.frame + elapsed * fps + beat * this.factor;
     }
   }
 
@@ -136,12 +137,8 @@
       this.frame = 0;
     }
 
-    getFrame() {
-      const frame = this.frame;
-
-      this.frame += 1 + beat * this.factor;
-
-      return frame;
+    getFrame(elapsed) {
+      return this.frame + elapsed * fps + beat * this.factor;
     }
   }
 
@@ -163,7 +160,7 @@
     beat() {}
 
     setFrame(frame) {
-      const elapsedSeconds = frame / 60;
+      const elapsedSeconds = frame / fps;
 
       if (elapsedSeconds >= this.targetSeconds) {
         this.onAdvanceScene();
@@ -188,7 +185,7 @@
     }
 
     setFrame(frame) {
-      this.elapsedSeconds = frame / 60;
+      this.elapsedSeconds = frame / fps;
     }
   }
 
@@ -504,6 +501,7 @@
   let dweets = {};
   let activeSceneIdx = 0;
   let activeScene = null;
+  let activeSceneStartTime = null;
   let activeTrack = null;
   let activeDweet = null;
 
@@ -539,7 +537,7 @@
     function render() {
       requestAnimationFrame(render);
 
-      const frame = activeScene.frameAdvancer.getFrame();
+      const frame = activeScene.frameAdvancer.getFrame(audioCtx && audioCtx.currentTime - activeSceneStartTime);
 
       activeDweet.setFrame(frame);
 
@@ -595,6 +593,7 @@
 
   let source = null;
   let gain = null;
+  let audioCtx = null;
 
   const isBeatOverlayEnabled = false;
   // @todo bad names: globals for beat overlay
@@ -604,6 +603,8 @@
 
   function setupAudio(data) {
     const ctx = new AudioContext();
+
+    audioCtx = ctx;
 
     source = ctx.createBufferSource();
     gain = ctx.createGain();
@@ -718,6 +719,7 @@
 
   function setActiveScene(scene) {
     activeScene = scene;
+    activeSceneStartTime = audioCtx && audioCtx.currentTime;
 
     activeScene.sceneAdvancer.reset();
 

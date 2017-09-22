@@ -47,10 +47,6 @@
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  function decodeAudio(data, ctx) {
-    return new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
-  }
-
   /* Fetching */
 
   function fetchTrack(url) {
@@ -116,7 +112,7 @@
   }
 
   class BeatBounceFrameAdvancer {
-    constructor(factor) {
+    constructor(factor, beatDetector) {
       this.factor = factor;
       this.reset();
     }
@@ -131,12 +127,12 @@
         return 0;
       }
 
-      return (elapsed - this.startDelay) * FPS + beat * this.factor;
+      return (elapsed - this.startDelay) * FPS + beatDetector.beat * this.factor;
     }
   }
 
   class BeatRushFrameAdvancer {
-    constructor(factor) {
+    constructor(factor, beatDetector) {
       this.factor = factor;
       this.reset();
     }
@@ -151,7 +147,7 @@
         return 0;
       }
 
-      return (elapsed - this.startDelay) * FPS + beat * this.factor;
+      return (elapsed - this.startDelay) * FPS + beatDetector.beat * this.factor;
     }
   }
 
@@ -240,7 +236,7 @@
       const w = ctx.canvas.width;
       const h = ctx.canvas.height;
 
-      const zoom = beat * this.factor / 100;
+      const zoom = beatDetector.beat * this.factor / 100;
 
       ctx.clearRect(0, 0, w, h);
       ctx.translate(-w * zoom / 2, -h * zoom / 2);
@@ -370,7 +366,7 @@
     }
 
     afterDraw(ctx) {
-      ctx.globalAlpha = beat;
+      ctx.globalAlpha = beatDetector.beat;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.globalAlpha = 1;
@@ -387,16 +383,65 @@
     }
 
     afterDraw(ctx) {
-      ctx.globalAlpha = beat;
+      ctx.globalAlpha = beatDetector.beat;
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.globalAlpha = 1;
     }
   }
 
-  const progressFrameAdvancer = new ProgressFrameAdvancer();
+  /* Beat detector */
+
+  class BeatDetector {
+    constructor(beatHandler) {
+      this.beatHandler = beatHandler;
+      this.avgSqrBuff = Array(4).fill(0);
+      this.avgSqrPos = 0;
+      this.avgSqrSum = 0;
+      this.beat = 0;
+
+      this.bins = null;
+      this.avg = null;
+      this.runningAvg = null;
+    }
+
+    process(bins) {
+      let sum = 0;
+
+      for (let i = 0; i < bins.length; i++) {
+        sum += bins[i];
+      }
+
+      const avg = sum / bins.length;
+      const avgSqr = avg * avg;
+
+      this.avgSqrBuff[this.avgSqrPos] = avgSqr;
+
+      const nextPos = (this.avgSqrPos + 1) % this.avgSqrBuff.length;
+
+      this.avgSqrSum += avgSqr - this.avgSqrBuff[nextPos];
+      this.avgSqrPos = nextPos;
+
+      const runningAvg = Math.sqrt(this.avgSqrSum / this.avgSqrBuff.length);
+
+      if (avg / (runningAvg + 0.00001) > 1.3) {
+        this.beat = 1;
+        this.beatHandler();
+      } else {
+        this.beat *= 0.5;
+      }
+
+      this.bins = bins;
+      this.avg = avg;
+      this.runningAvg = runningAvg;
+    }
+  }
 
   /* Decoding */
+
+  function decodeAudio(data, ctx) {
+    return new Promise((resolve, reject) => ctx.decodeAudioData(data, resolve, reject));
+  }
 
   function decodeDemo(s) {
     const tokens = /^\/demo\/v([^/])\/([^/]+)\/([^/]+)\/(.+)$/.exec(s);
@@ -523,9 +568,12 @@
   let activeScene = null;
   let activeSceneStartTime = null;
   let activeTrack = null;
+  let activeAudio = null;
   let activeDweet = null;
 
-  let beat = 0;
+  const beatDetector = new BeatDetector(() => activeScene.sceneAdvancer.beat());
+
+  const progressFrameAdvancer = new ProgressFrameAdvancer();
 
   if (location.pathname !== '/') {
     demo = decodeDemo(location.pathname);
@@ -544,10 +592,6 @@
     demo.loaderScene.dweetId = getRandomLoaderDweetId();
   }
 
-  function beatHandler() {
-    activeScene.sceneAdvancer.beat();
-  }
-
   function setupRendering(canvas) {
     canvas.width = SCENE_WIDTH;
     canvas.height = SCENE_HEIGHT;
@@ -557,7 +601,7 @@
     function render() {
       requestAnimationFrame(render);
 
-      const frame = activeScene.frameAdvancer.getFrame(audioCtx && audioCtx.currentTime - activeSceneStartTime);
+      const frame = activeScene.frameAdvancer.getFrame(activeAudio && activeAudio.ctx.currentTime - activeSceneStartTime);
 
       activeDweet.setFrame(frame);
 
@@ -585,25 +629,25 @@
 
       blender.afterDraw && blender.afterDraw(ctx);
 
-      if (isBeatOverlayEnabled) {
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = 'orange';
+    //   if (isBeatOverlayEnabled) {
+    //     ctx.globalAlpha = 1;
+    //     ctx.fillStyle = 'orange';
 
-        const binW = canvas.width / gbins.length;
-        let binX = 0;
+    //     const binW = canvas.width / gbins.length;
+    //     let binX = 0;
 
-        for (let i = 0; i < gbins.length; i++) {
-          binX = i * binW;
-          ctx.fillRect(binX, canvas.height / 2 - gbins[i], binW, gbins[i]);
-        }
+    //     for (let i = 0; i < gbins.length; i++) {
+    //       binX = i * binW;
+    //       ctx.fillRect(binX, canvas.height / 2 - gbins[i], binW, gbins[i]);
+    //     }
 
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(0, canvas.height / 2 + 40 - beat * 10, canvas.width, beat * 20);
-        ctx.fillStyle = 'gray';
-        ctx.fillRect(0, canvas.height - gra * 2 - 1, canvas.width, 1);
-        ctx.fillStyle = 'red';
-        ctx.fillRect(0, canvas.height - gavg * 2 - 1, canvas.width, 1);
-      }
+    //     ctx.fillStyle = 'blue';
+    //     ctx.fillRect(0, canvas.height / 2 + 40 - beat * 10, canvas.width, beat * 20);
+    //     ctx.fillStyle = 'gray';
+    //     ctx.fillRect(0, canvas.height - gra * 2 - 1, canvas.width, 1);
+    //     ctx.fillStyle = 'red';
+    //     ctx.fillRect(0, canvas.height - gavg * 2 - 1, canvas.width, 1);
+    //   }
 
       activeScene.sceneAdvancer.setFrame(frame);
     }
@@ -611,31 +655,13 @@
     render();
   }
 
-  let source = null;
-  let gain = null;
-  let audioCtx = null;
-
-  const isBeatOverlayEnabled = false;
-  // @todo bad names: globals for beat overlay
-  let gra = 0;
-  let gavg = 0;
-  let gbins = [];
-
   function setupAudio(data) {
     const ctx = new AudioContext();
-
-    audioCtx = ctx;
 
     source = ctx.createBufferSource();
     gain = ctx.createGain();
 
     source.loop = true;
-
-    // const filter = ctx.createBiquadFilter();
-
-    // filter.type = 'bandpass';
-    // filter.frequency.value = 180;
-    // filter.Q.value = 10;
 
     const processor = ctx.createScriptProcessor(2048, 1, 1);
 
@@ -643,49 +669,14 @@
     analyser.smoothingTimeConstant = 0.3;
     analyser.fftSize = 1024;
 
-    // source.connect(filter);
-    // filter.connect(analyser);
     source.connect(analyser);
     analyser.connect(processor);
 
     const bins = new Uint8Array(analyser.frequencyBinCount);
-    gbins = bins;
-
-    const avgBuff = Array(4).fill(0);
-    let avgPos = 0;
-    let avgSum = 0;
 
     processor.onaudioprocess = () => {
       analyser.getByteFrequencyData(bins);
-
-      let sum = 0;
-
-      for (let i = 0; i < bins.length; i++) {
-        sum += bins[i];
-      }
-
-      const avg = sum / bins.length;
-      const avgSqr = avg * avg;
-
-      avgBuff[avgPos] = avgSqr;
-
-      const nextPos = (avgPos + 1) % avgBuff.length;
-
-      avgSum += avgSqr - avgBuff[nextPos];
-      avgPos = nextPos;
-
-      const runningAvg = Math.sqrt(avgSum / avgBuff.length);
-      gra = runningAvg;
-      gavg = avg;
-
-      if (avg / (runningAvg + 0.00001) > 1.3) {
-        beat = 1;
-        beatHandler();
-      } else {
-        beat *= 0.5;
-      }
-
-      prevAvg = avg;
+      beatDetector.process(bins);
     };
 
     const delay = ctx.createDelay();
@@ -696,10 +687,18 @@
     source.connect(delay);
     delay.connect(gain);
     gain.connect(ctx.destination);
-    // filter.connect(ctx.destination);
+
+    function start() {
+      source.start();
+    }
+
+    function toggle() {
+      gain.gain.value ^= 1;
+    }
 
     return decodeAudio(data, ctx)
-      .then((buffer) => source.buffer = buffer);
+      .then((buffer) => source.buffer = buffer)
+      .then(() => ({ start, toggle, ctx }));
   }
 
   function setupUi() {
@@ -713,23 +712,19 @@
       $container.attr('full-screen', screenfull.isFullscreen);
     });
 
-    $('#toggle-audio')
+    $('#toggle-audio') // @todo disable until activeAudio is set
       .on('click', function () {
         $(this).find('.icon.-speaker').toggleClass('-on -off');
-        toggleAudio();
+        activeAudio.toggle();
       });
-  }
-
-  function startAudio() {
-    source.start();
-  }
-
-  function toggleAudio() {
-    gain.gain.value ^= 1;
   }
 
   function setActiveTrack(track) {
     return activeTrack = track;
+  }
+
+  function setActiveAudio(audio) {
+    activeAudio = audio;
   }
 
   function setActiveDweet(dweet) {
@@ -739,7 +734,7 @@
 
   function setActiveScene(scene) {
     activeScene = scene;
-    activeSceneStartTime = audioCtx && audioCtx.currentTime;
+    activeSceneStartTime = activeAudio && activeAudio.ctx.currentTime;
 
     activeScene.sceneAdvancer.reset();
 
@@ -796,16 +791,19 @@
   prepareDweet(demo.loaderScene.dweetId)
     .then(() => setActiveScene(demo.loaderScene))
     .then(() => {
-      taskManager.add(getCanvas()
-        .then(setupRendering)
-        .then(setupUi)
-        .then(() => showDweetInfo(activeDweet))
+      taskManager.add(
+        getCanvas()
+          .then(setupRendering)
+          .then(setupUi)
+          .then(() => showDweetInfo(activeDweet))
       );
 
-      taskManager.add(fetchTrack(demo.trackUrl)
-        .then(setActiveTrack)
-        .then((track) => fetchAudio(track.audioUrl))
-        .then(setupAudio)
+      taskManager.add(
+        fetchTrack(demo.trackUrl)
+          .then(setActiveTrack)
+          .then((track) => fetchAudio(track.audioUrl))
+          .then(setupAudio)
+          .then(setActiveAudio)
       );
 
       getUniqueDweetIdsFromTimeline(demo.timeline)
@@ -815,7 +813,7 @@
         .then(() => pause(1000))
         .then(() => {
           showTrackInfo(activeTrack);
-          startAudio();
+          activeAudio.start();
           setActiveSceneByIdx(0);
           //blender = fadeOutToWhiteBlender.reset();
 

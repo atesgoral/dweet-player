@@ -680,7 +680,7 @@
     };
 
     const delay = ctx.createDelay();
-    delay.delayTime.value = 0.1;
+    delay.delayTime.value = 0.05;
 
     processor.connect(ctx.destination);
 

@@ -424,7 +424,7 @@
 
       const runningAvg = Math.sqrt(this.avgSqrSum / this.avgSqrBuff.length);
 
-      if (avg / (runningAvg + 0.00001) > 1.3) {
+      if (avg / (runningAvg + 0.00001) > 1.4) {
         this.beat = 1;
         this.beatHandler();
       } else {

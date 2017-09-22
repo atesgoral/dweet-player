@@ -58,9 +58,7 @@
   }
 
   function fetchDweet(id) {
-    return $.ajax(`/api/dweets/${id}`, { dataType: 'json' })
-      .then((dweet) => dweets[id] = createRuntime(dweet, SCENE_WIDTH, SCENE_HEIGHT));
-
+    return $.ajax(`/api/dweets/${id}`, { dataType: 'json' });
   }
 
   function fetchAudio(url) {
@@ -510,6 +508,13 @@
     $('#dweet-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
   }
 
+  /* Dweet preparation */
+
+  function prepareDweet(id) {
+    return fetchDweet(id)
+      .then((dweet) => dweets[id] = createRuntime(dweet, SCENE_WIDTH, SCENE_HEIGHT));
+  }
+
   /* Initialization */
 
   let demo = null;
@@ -788,7 +793,7 @@
 
   const taskManager = new TaskManager((pending, total) => progressFrameAdvancer.updateProgress(pending, total));
 
-  fetchDweet(demo.loaderScene.dweetId)
+  prepareDweet(demo.loaderScene.dweetId)
     .then(() => setActiveScene(demo.loaderScene))
     .then(() => {
       taskManager.add(getCanvas()
@@ -804,7 +809,7 @@
       );
 
       getUniqueDweetIdsFromTimeline(demo.timeline)
-        .forEach((dweetId) => taskManager.add(fetchDweet(dweetId)));
+        .forEach((dweetId) => taskManager.add(prepareDweet(dweetId)));
 
       taskManager.whenDone()
         .then(() => pause(1000))

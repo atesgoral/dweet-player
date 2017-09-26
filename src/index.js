@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const request = require('request-promise-native');
 const cheerio = require('cheerio');
+const jsmediatags = require('jsmediatags');
 
 const app = express();
 
@@ -40,10 +41,8 @@ app.get('/api/dweets/:id', (req, res, next) => {
     .catch(next);
 });
 
-app.get('/api/tracks/:trackUrl', (req, res, next) => {
-  const trackUrl = decodeURIComponent(req.params.trackUrl);
-
-  request(trackUrl)
+function getFmaTrack(trackUrl) {
+  return request(trackUrl)
     .then((response) => {
       const $ = cheerio.load(response);
       const className = $('.play-item').attr('class');
@@ -64,17 +63,66 @@ app.get('/api/tracks/:trackUrl', (req, res, next) => {
     })
     .then(JSON.parse)
     .then((response) => response.dataset[0])
+    .then((track) => ({
+      audioUrl: trackUrl + '/download',
+      trackTitle: track.track_title,
+      trackUrl,
+      artistName: track.artist_name,
+      artistUrl: track.artist_url,
+      licenseTitle: getCcLicenseTitleFromUrl(track.license_url) || track.license_title,
+      licenseUrl: track.license_url
+    }));
+}
+
+function readId3(mp3Data) {
+  return new Promise((resolve, reject) => {
+    new jsmediatags.Reader(mp3Data)
+      .setTagsToRead([ 'title', 'artist' ])
+      .read({
+        onSuccess: resolve,
+        onError: reject
+      });
+  });
+}
+
+function getMp3Track(trackUrl) {
+  const options = {
+    url: trackUrl,
+    encoding: null
+  };
+
+  return request(options)
+    .then(readId3)
+    .then((id3) => {
+      return {
+        audioUrl: trackUrl,
+        trackTitle: id3.tags.title,
+        artistName: id3.tags.artist
+      };
+    });
+}
+
+const trackUrlHandlers = [{
+  pattern: /^https?:\/\/freemusicarchive\.org/,
+  get: getFmaTrack
+}, {
+  pattern: /\.mp3$/,
+  get: getMp3Track
+}];
+
+app.get('/api/tracks/:trackUrl', (req, res, next) => {
+  const trackUrl = decodeURIComponent(req.params.trackUrl);
+  const handler = trackUrlHandlers.find((handler) => handler.pattern.test(trackUrl));
+
+  if (!handler) {
+    next('Unsupported track URL');
+  }
+
+  handler
+    .get(trackUrl)
     .then((track) => {
       res.set('Cache-Control', `public, max-age=${cacheMaxAge}`);
-      res.json({
-        audioUrl: trackUrl + '/download',
-        trackTitle: track.track_title,
-        trackUrl,
-        artistName: track.artist_name,
-        artistUrl: track.artist_url,
-        licenseTitle: getCcLicenseTitleFromUrl(track.license_url) || track.license_title,
-        licenseUrl: track.license_url
-      });
+      res.json(track);
     })
     .catch(next);
 });

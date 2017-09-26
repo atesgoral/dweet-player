@@ -10,6 +10,7 @@
     integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
     crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/screenfull.js/3.3.1/screenfull.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.10/handlebars.min.js"></script>
   <script src="/main.js?"></script>
 </head>
 <body>
@@ -30,14 +31,23 @@
     <a href="https://www.dwitter.net">browse dweets on Dwitter</a> &middot;
     <a href="https://github.com/atesgoral/dweet-player">fork on GitHub</a>
   </footer>
-  <script type="text/html" id="track-info-tpl">
-    <a href="${trackUrl}">${trackTitle}</a> by <a href="${artistUrl}">${artistName}</a> &middot;
-    <a href="${licenseUrl}">${licenseTitle}</a>
+  <script type="text/x-handlebars-template" id="track-info-tpl">
+    {{#if trackTitle}}
+      {{#if trackUrl}}<a href="{{trackUrl}}">{{trackTitle}}</a>{{else}}{{trackTitle}}{{/if}}
+    {{/if}}
+    {{#if artistName}}
+      by
+      {{#if artistUrl}}<a href="{{artistUrl}}">{{artistName}}</a>{{else}}{{artistName}}{{/if}}
+    {{/if}}
+    {{#if licenseTitle}}
+      &middot;
+      <a href="{{licenseUrl}}">{{licenseTitle}}</a>
+    {{/if}}
   </script>
-  <script type="text/html" id="dweet-info-tpl">
-    <a href="${dweetUrl}">#${id}</a> by <a href="${authorUrl}">${author}</a> &middot;
-    ${length}/140
-    <pre>${src}</pre>
+  <script type="text/x-handlebars-template" id="dweet-info-tpl">
+    <a href="{{dweetUrl}}">#{{id}}</a> by <a href="{{authorUrl}}">{{author}}</a> &middot;
+    {{length}}/140
+    <pre>{{src}}</pre>
   </script>
 </body>
 </html>

@@ -29,20 +29,6 @@
     );
   }
 
-  function escapeHtml(html) {
-    const text = document.createTextNode(html);
-    const div = document.createElement('div');
-    div.appendChild(text);
-    return div.innerHTML;
-  }
-
-  // @todo remove this when API cache purged
-  function getCcLicenseTitleFromUrl(url) {
-    const tokens = /https?:\/\/creativecommons.org\/licenses\/([^/]+)\/([^/]+)/.exec(url);
-
-    return tokens && `CC ${tokens[1].toUpperCase().replace(/-/g, ' ')} ${tokens[2]}`;
-  }
-
   function pause(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -532,25 +518,13 @@
   }
 
   function showTrackInfo(track) {
-    const tpl = $('#track-info-tpl').html();
-    const params = Object.assign({}, track, { // @todo remove this when API cache purged
-      licenseTitle: getCcLicenseTitleFromUrl(track.licenseUrl) || track.licenseTitle
-    });
-
-    $('#track-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
+    const tpl = Handlebars.compile($('#track-info-tpl').html());
+    $('#track-info').html(tpl(track));
   }
 
   function showDweetInfo(dweet) {
-    const tpl = $('#dweet-info-tpl').html();
-    const params = Object.assign({ // @todo remove this when API cache purged
-      dweetUrl: `https://www.dwitter.net/d/${dweet.id}`,
-      authorUrl: `https://www.dwitter.net/u/${dweet.author}`,
-      length: dweet.src.length
-    }, dweet, {
-      src: escapeHtml(dweet.src)
-    });
-
-    $('#dweet-info').html(tpl.replace(/\$\{(.+?)\}/g, (s, name) => params[name]));
+    const tpl = Handlebars.compile($('#dweet-info-tpl').html());
+    $('#dweet-info').html(tpl(dweet));
   }
 
   /* Dweet preparation */
@@ -823,6 +797,7 @@
     });
 })(function () { // No named arguments to keep arguments away from u
   let $ = void 0; // Hide global jQuery
+  let Handlebars = void 0; // Hide global Handlebars
 
   let c = null;
 

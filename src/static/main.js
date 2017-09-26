@@ -513,18 +513,27 @@
 
   /* UI */
 
+  let trackInfoTpl = null;
+  let dweetInfoTpl = null;
+
   function getCanvas() {
     return new Promise((resolve) => $(() => resolve($("#c").get(0))));
   }
 
+  function compileTemplates() {
+    trackInfoTpl = Handlebars.compile($('#track-info-tpl').html());
+    dweetInfoTpl = Handlebars.compile($('#dweet-info-tpl').html());
+  }
+
   function showTrackInfo(track) {
-    const tpl = Handlebars.compile($('#track-info-tpl').html());
-    $('#track-info').html(tpl(track));
+    $('#track-info').html(trackInfoTpl(track));
   }
 
   function showDweetInfo(dweet) {
-    const tpl = Handlebars.compile($('#dweet-info-tpl').html());
-    $('#dweet-info').html(tpl(dweet));
+    // @todo make initialization so that we don't need this check
+    if (dweetInfoTpl) {
+      $('#dweet-info').html(dweetInfoTpl(dweet));
+    }
   }
 
   /* Dweet preparation */
@@ -768,6 +777,7 @@
       taskManager.add(
         getCanvas()
           .then(setupRendering)
+          .then(compileTemplates)
           .then(setupUi)
           .then(() => showDweetInfo(activeDweet))
       );

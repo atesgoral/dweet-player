@@ -624,7 +624,7 @@
     function render() {
       requestAnimationFrame(render);
 
-      const frame = activeScene.frameAdvancer.getFrame(activeAudio && activeAudio.ctx.currentTime - activeSceneStartTime);
+      const frame = activeScene.frameAdvancer.getFrame(activeAudio && activeAudio.getTime() - activeSceneStartTime);
 
       activeDweet.setFrame(frame);
 
@@ -660,6 +660,7 @@
 
   function setupAudio(data) {
     const ctx = new AudioContext();
+    let startTime = null;
 
     source = ctx.createBufferSource();
     gain = ctx.createGain();
@@ -692,6 +693,7 @@
     gain.connect(ctx.destination);
 
     function start() {
+      startTime = ctx.currentTime;
       source.start();
     }
 
@@ -699,9 +701,13 @@
       gain.gain.value ^= 1;
     }
 
+    function getTime() {
+      return ctx.currentTime - startTime;
+    }
+
     return decodeAudio(data, ctx)
       .then((buffer) => source.buffer = buffer)
-      .then(() => ({ start, toggle, ctx }));
+      .then(() => ({ start, toggle, getTime }));
   }
 
   function setupUi() {
@@ -742,7 +748,7 @@
 
   function setActiveScene(scene) {
     activeScene = scene;
-    activeSceneStartTime = activeAudio && activeAudio.ctx.currentTime;
+    activeSceneStartTime = activeAudio && activeAudio.getTime();
 
     activeScene.sceneAdvancer.reset();
 

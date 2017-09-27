@@ -536,6 +536,8 @@
     }
   }
 
+  let isAudioVisualizationEnabled = false;
+
   function setupAudioVisualization() {
     const c = $('#audio-vis')[0];
 
@@ -550,6 +552,10 @@
       requestAnimationFrame(render);
 
       ctx.clearRect(0, 0, c.width, -c.height);
+
+      if (!isAudioVisualizationEnabled || screenfull.isFullscreen){
+        return;
+      }
 
       ctx.fillStyle = '#fff';
 
@@ -713,6 +719,11 @@
       .on('click', function () {
         $(this).find('.icon.-speaker').toggleClass('-on -off');
         activeAudio.toggle();
+      });
+
+    $('#toggle-audio-vis')
+      .on('click', function () {
+        isAudioVisualizationEnabled = !isAudioVisualizationEnabled;
       });
   }
 

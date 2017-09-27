@@ -208,7 +208,6 @@ h1 a:after {
 
 .icon.-speaker.-on:before {
   height: .333em;
-  right: -.533em;
   right: -.5em;
 }
 
@@ -262,4 +261,33 @@ h1 a:after {
   height: .333em;
   top: .233em;
   left: -.1em;
+}
+
+.icon.-vis {
+  vertical-align: middle;
+  box-sizing: border-box;
+  display: inline-block;
+  top: .5em;
+  width: 1em;
+  height: .5em;
+  border-left: .15em solid currentColor;
+  border-right: .15em solid currentColor;
+}
+
+.icon.-vis.-on:before, .icon.-vis.-on:after {
+  content: '';
+  background: currentColor;
+  width: .15em;
+  position: absolute;
+  bottom: 0;
+}
+
+.icon.-vis.-on:before {
+  height: 1em;
+  left: .1em;
+}
+
+.icon.-vis.-on:after {
+  height: .8em;
+  left: .35em;
 }

@@ -148,6 +148,7 @@ h1 a:after {
 #container[full-screen='true'] {
   height: auto;
   cursor: none;
+  background: black;
 }
 
 #audio-vis {

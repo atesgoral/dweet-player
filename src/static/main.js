@@ -536,6 +536,40 @@
     }
   }
 
+  function setupAudioVisualization() {
+    const c = $('#audio-vis')[0];
+
+    c.width = c.clientWidth;
+    c.height = c.clientHeight;
+
+    const ctx = c.getContext('2d');
+
+    ctx.scale(1, -1);
+
+    function render() {
+      requestAnimationFrame(render);
+
+      ctx.clearRect(0, 0, c.width, -c.height);
+
+      ctx.fillStyle = '#fff';
+
+      const bins = beatDetector.bins;
+
+      for (let i = 0; i < bins.length; i++) {
+        ctx.fillRect(i, -c.height, 1, bins[i] / 255 * c.height);
+      }
+
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(c.width - 16, -(c.height - beatDetector.runningAvg / 255 * c.height + 1), 16, 1);
+      ctx.fillStyle = '#888';
+      ctx.globalAlpha = beatDetector.beat / 2 + 0.5;
+      ctx.fillRect(c.width - 16, -(c.height - beatDetector.avg / 255 * c.height + 1), 16, 1);
+      ctx.globalAlpha = 1;
+    }
+
+    render();
+  }
+
   /* Dweet preparation */
 
   function prepareDweet(id) {
@@ -611,26 +645,6 @@
       }
 
       blender.afterDraw && blender.afterDraw(ctx);
-
-    //   if (isBeatOverlayEnabled) {
-    //     ctx.globalAlpha = 1;
-    //     ctx.fillStyle = 'orange';
-
-    //     const binW = canvas.width / gbins.length;
-    //     let binX = 0;
-
-    //     for (let i = 0; i < gbins.length; i++) {
-    //       binX = i * binW;
-    //       ctx.fillRect(binX, canvas.height / 2 - gbins[i], binW, gbins[i]);
-    //     }
-
-    //     ctx.fillStyle = 'blue';
-    //     ctx.fillRect(0, canvas.height / 2 + 40 - beat * 10, canvas.width, beat * 20);
-    //     ctx.fillStyle = 'gray';
-    //     ctx.fillRect(0, canvas.height - gra * 2 - 1, canvas.width, 1);
-    //     ctx.fillStyle = 'red';
-    //     ctx.fillRect(0, canvas.height - gavg * 2 - 1, canvas.width, 1);
-    //   }
 
       activeScene.sceneAdvancer.setFrame(frame);
     }
@@ -797,6 +811,7 @@
         .then(() => pause(1000))
         .then(() => {
           showTrackInfo(activeTrack);
+          setupAudioVisualization();
           activeAudio.start();
           setActiveSceneByIdx(0);
           //blender = fadeOutToWhiteBlender.reset();

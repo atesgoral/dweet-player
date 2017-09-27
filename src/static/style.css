@@ -150,8 +150,13 @@ h1 a:after {
   cursor: none;
 }
 
-#track-info {
+#audio-vis {
   margin-top: 2rem;
+  width: 100%;
+  height: 1rem;
+}
+
+#track-info {
   font-size: 0.75rem;
 }
 

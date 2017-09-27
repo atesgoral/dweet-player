@@ -455,7 +455,7 @@
     const timeline = timelineStr
       .split(',')
       .map((s) => {
-        const tokens = /^(\d+)(?:([@~!])(\d+))?(?:([tT])(\d+)?)?(?:([zvhwb])(\d+)?)?(=)?/.exec(s);
+        const tokens = /^(\d+)(?:([@~!])([\d\.]+))?(?:([tT])([\d\.]+)?)?(?:([zvhwb])([\d\.]+)?)?(=)?/.exec(s);
 
         if (tokens) {
           const dweetId = tokens[1];

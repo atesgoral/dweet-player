@@ -536,7 +536,7 @@
     }
   }
 
-  let isAudioVisualizationEnabled = false;
+  let isAudioVisualizationEnabled = true;
 
   function setupAudioVisualization() {
     const c = $('#audio-vis')[0];
@@ -568,7 +568,7 @@
       ctx.fillStyle = '#fff';
       ctx.fillRect(c.width - 16, -(c.height - beatDetector.runningAvg / 255 * c.height + 1), 16, 1);
       ctx.fillStyle = '#888';
-      ctx.globalAlpha = beatDetector.beat / 2 + 0.5;
+      ctx.globalAlpha = beatDetector.beat;
       ctx.fillRect(c.width - 16, -(c.height - beatDetector.avg / 255 * c.height + 1), 16, 1);
       ctx.globalAlpha = 1;
     }

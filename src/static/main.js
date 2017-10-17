@@ -130,10 +130,13 @@
     getFrame(elapsed) {
       if (this.startDelay === null) {
         this.startDelay = elapsed;
+        this.offset = 0;
         return 0;
       }
 
-      return (elapsed - this.startDelay) * FPS + beatDetector.beat * this.factor;
+      this.offset += beatDetector.beat * this.factor;
+
+      return (elapsed - this.startDelay) * FPS + this.offset;
     }
   }
 

@@ -208,6 +208,30 @@
     setFrame() {}
   }
 
+  /* Trig morphers */
+
+  class BypassTrigMorpher {
+    constructor() {
+      this.sin = Math.sin;
+      this.cos = Math.cos;
+      this.tan = Math.tan;
+    }
+  }
+
+  class RandomTrigMorpher {
+    constructor(factor) {
+      this.sin = function (a) {
+        return Math.sin(a) * (1 - Math.random() * beatDetector.beat * factor / 10);
+      };
+      this.cos = function (a) {
+        return Math.cos(a) * (1 - Math.random() * beatDetector.beat * factor / 10);
+      };
+      this.tan = function (a) {
+        return Math.tan(a) * (1 - Math.random() * beatDetector.beat * factor / 10);
+      };
+    }
+  }
+
   /* Blenders */
 
   class OverlayBlender {
@@ -452,13 +476,14 @@
       dweetId: loaderDweetId,
       sceneAdvancer: new StubSceneAdvancer(),
       frameAdvancer: progressFrameAdvancer,
+      trigMorpher: new BypassTrigMorpher(),
       blender: new OverlayBlender()
     };
 
     const timeline = timelineStr
       .split(',')
       .map((s) => {
-        const tokens = /^(\d+)(?:([@~!])([\d\.]+))?(?:([tT])([\d\.]+)?)?(?:([zvhwb])([\d\.]+)?)?(=)?/.exec(s);
+        const tokens = /^(\d+)(?:([@~!])([\d\.]+))?(?:([tT])([\d\.]+)?)?(?:([r])([\d\.]+)?)?(?:([zvhwb])([\d\.]+)?)?(=)?/.exec(s);
 
         if (tokens) {
           const dweetId = tokens[1];
@@ -466,9 +491,11 @@
           const sceneAdvancerFactor = parseFloat(tokens[3] || '5');
           const frameAdvancerType = tokens[4] || 'm';
           const frameAdvancerFactor = parseFloat(tokens[5] || '5');
-          const blenderType = tokens[6] || 'o';
-          const blenderFactor = parseFloat(tokens[7] || '5');
-          const isContinuous = !!tokens[8];
+          const trigMorpherType = tokens[6] || 'm';
+          const trigMorpherFactor = parseFloat(tokens[7] || '5');
+          const blenderType = tokens[8] || 'o';
+          const blenderFactor = parseFloat(tokens[9] || '5');
+          const isContinuous = !!tokens[10];
 
           const SceneAdvancer = {
             '@': ExactTimeSceneAdvancer,
@@ -484,6 +511,12 @@
 
           const frameAdvancer = new FrameAdvancer(frameAdvancerFactor);
 
+          const TrigMorpher = {
+            'r': RandomTrigMorpher
+          }[trigMorpherType] || BypassTrigMorpher;
+
+          const trigMorpher = new TrigMorpher(trigMorpherFactor);
+
           const Blender = {
             'z': ZoomBlender,
             'v': VerticalMirrorBlender,
@@ -498,6 +531,7 @@
             dweetId,
             sceneAdvancer,
             frameAdvancer,
+            trigMorpher,
             blender,
             isContinuous
           };
@@ -764,7 +798,7 @@
     setActiveDweet(dweets[activeScene.dweetId]);
 
     if (!activeDweet.canvas || !activeScene.isContinuous) {
-      activeDweet.reset();
+      activeDweet.reset(activeScene.trigMorpher);
     }
   }
 
@@ -865,9 +899,9 @@
       c.width = width;
       c.height = height;
 
-      S = Math.sin;
-      C = Math.cos;
-      T = Math.tan;
+      S = arguments[0].sin;
+      C = arguments[0].cos;
+      T = arguments[0].tan;
 
       R = function R(r,g,b,a) {
         a = a === undefined ? 1 : a;

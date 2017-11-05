@@ -218,16 +218,74 @@
     }
   }
 
+  class UniformTrigMorpher {
+    constructor(factor) {
+      this.sin = function (a) {
+        return Math.sin(a) * (1 - beatDetector.beat * factor / 10);
+      };
+      this.cos = function (a) {
+        return Math.cos(a) * (1 - beatDetector.beat * factor / 10);
+      };
+      this.tan = function (a) {
+        return Math.tan(a) * (1 - beatDetector.beat * factor / 10);
+      };
+    }
+  }
+
   class RandomTrigMorpher {
     constructor(factor) {
       this.sin = function (a) {
-        return Math.sin(a) * (1 - Math.random() * beatDetector.beat * factor / 10);
+        return Math.sin(a) * (1 - Math.random() * beatDetector.beat * factor / 20);
       };
       this.cos = function (a) {
-        return Math.cos(a) * (1 - Math.random() * beatDetector.beat * factor / 10);
+        return Math.cos(a) * (1 - Math.random() * beatDetector.beat * factor / 20);
       };
       this.tan = function (a) {
-        return Math.tan(a) * (1 - Math.random() * beatDetector.beat * factor / 10);
+        return Math.tan(a) * (1 - Math.random() * beatDetector.beat * factor / 20);
+      };
+    }
+  }
+
+  class FftTrigMorpher {
+    constructor(factor) {
+      this.sin = function (a) {
+        const twoPi = Math.PI * 2;
+
+        a = a % twoPi;
+
+        if (a < 0) {
+          a += twoPi;
+        }
+
+        const m = beatDetector.bins[beatDetector.bins.length * a / twoPi | 0] / 255;
+
+        return Math.sin(a) * (1 - m * factor / 10);
+      };
+      this.cos = function (a) {
+        const twoPi = Math.PI * 2;
+
+        a = a % twoPi;
+
+        if (a < 0) {
+          a += twoPi;
+        }
+
+        const m = beatDetector.bins[beatDetector.bins.length * a / twoPi | 0] / 255;
+
+        return Math.cos(a) * (1 - m * factor / 10);
+      };
+      this.tan = function (a) {
+        const twoPi = Math.PI * 2;
+
+        a = a % twoPi;
+
+        if (a < 0) {
+          a += twoPi;
+        }
+
+        const m = beatDetector.bins[beatDetector.bins.length * a / twoPi | 0] / 255;
+
+        return Math.tan(a) * (1 - m * factor / 10);
       };
     }
   }
@@ -483,7 +541,7 @@
     const timeline = timelineStr
       .split(',')
       .map((s) => {
-        const tokens = /^(\d+)(?:([@~!])([\d\.]+))?(?:([tT])([\d\.]+)?)?(?:([r])([\d\.]+)?)?(?:([zvhwb])([\d\.]+)?)?(=)?/.exec(s);
+        const tokens = /^(\d+)(?:([@~!])([\d\.]+))?(?:([tT])([\d\.]+)?)?(?:([urf])([\d\.]+)?)?(?:([zvhwb])([\d\.]+)?)?(=)?/.exec(s);
 
         if (tokens) {
           const dweetId = tokens[1];
@@ -512,7 +570,9 @@
           const frameAdvancer = new FrameAdvancer(frameAdvancerFactor);
 
           const TrigMorpher = {
-            'r': RandomTrigMorpher
+            'u': UniformTrigMorpher,
+            'r': RandomTrigMorpher,
+            'f': FftTrigMorpher,
           }[trigMorpherType] || BypassTrigMorpher;
 
           const trigMorpher = new TrigMorpher(trigMorpherFactor);

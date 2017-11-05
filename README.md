@@ -34,6 +34,7 @@ The timeline string is a comma-separated list of scenes: `<scene 1>,<scene 2>,..
 Each scene starts with a dweet ID, followed by a combination of these optional components:
 - A duration specifier
 - A time warping specifier
+- A trigonometric function (sine, cosine, tangent) morphing specifier
 - A "blender" (bad name for what it actually does)
 - A "=" at the very end to make the scene contiguous with a prior appearance of the same dweet i.e. dweet frame/t values continue increasing. By default, each dweet's runtime is reset every time they're shown.
 
@@ -45,6 +46,11 @@ Duration specifiers can be:
 Time warping specifiers can be:
 - Beat rush: `t[<amount>]` - Rushes the time forward on beats. The amount determines how much to rush. 5 frames (5/60 seconds) is the default.
 - Beat bounce: `T[<amount>]` - Bounces the time foward and then back (restores normal time) on beats. The amount determines how much to bounce. 5 frames is the default.
+
+Trig morphing specifiers can be:
+- Uniform: `u[<amount>]` - Morphs the trig functions by scaling their outputs on beats. The amount determines how much to scale. 5 is the default and it means by %50.
+- Random: `r[<amount>]` - Morphs the trig functions by scaling their outputs on beats, by a random factor. The amount determines how much to scale. 5 is the default and it means by a maximum of %50 (when the random factor is 1).
+- FFT: `f[<amount>]` - Morphs the trig functions by scaling their outputs by the values of the FFT bins as factors (0-1, spread over 2π). The amount determines how much to scale. 5 is the default and it means by %50.
 
 Blenders can be:
 - Zoom: `z[<amount>]` - Zooms in on beats. The amount determines how much to zoom. 5 (5%) is the default.

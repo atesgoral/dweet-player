@@ -19,20 +19,20 @@ function getCcLicenseTitleFromUrl(url) {
 
 app.get('/api/dweets/:id', (req, res, next) => {
   const id = parseInt(req.params.id, 10);
+  const options = {
+    uri: `https://www.dwitter.net/api/dweets/${id}`,
+    json: true
+  };
 
-  request(`https://www.dwitter.net/d/${id}`)
+  request(options)
     .then((response) => {
-      const $ = cheerio.load(response);
-      const author = $('.dweet-author a').text();
-      const src = $('.code-input').val();
-
-      dweet = {
+      const dweet = {
         id,
-        dweetUrl: `https://www.dwitter.net/d/${id}`,
-        author,
-        authorUrl: `https://www.dwitter.net/u/${author}`,
-        src,
-        length: src.length
+        dweetUrl: response.link,
+        author: response.author.username,
+        authorUrl: response.author.link,
+        src: response.code,
+        length: response.code.length
       };
 
       res.set('Cache-Control', `public, max-age=${cacheMaxAge}`);

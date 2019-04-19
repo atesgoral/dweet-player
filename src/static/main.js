@@ -8,7 +8,7 @@
 
   const DEFAULT_DEMO_STR = '/demo/v1/*/3171@4,3171~7w=,3167~10T8,855z7,855th=,855tv=,1829~8t,1231w,1829~14th7=,433~6b,915~8z8,2083T,2083th,3166~8tv,3143~8b,3144~10t7,1853~10,1994~5,1994~8tv,2561~6,631@15/'
     + [
-      'http://localhost:7890/track.mp3',
+      document.location.origin + '/track.mp3',
       'http://freemusicarchive.org/music/Graham_Bole/First_New_Day/Graham_Bole_-_12_-_We_Are_One',
       'http://freemusicarchive.org/music/Nctrnm/HOMME/Survive129Dm',
       'http://freemusicarchive.org/music/Creo/~/Memory_1520',

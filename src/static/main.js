@@ -758,55 +758,57 @@
   }
 
   function setupAudio(data) {
-    const ctx = new AudioContext();
-    let startTime = null;
+    return userInteracted.then(() => {
+      const ctx = new AudioContext();
+      let startTime = null;
 
-    source = ctx.createBufferSource();
-    gain = ctx.createGain();
+      source = ctx.createBufferSource();
+      gain = ctx.createGain();
 
-    source.loop = true;
+      source.loop = true;
 
-    const processor = ctx.createScriptProcessor(2048, 1, 1);
+      const processor = ctx.createScriptProcessor(2048, 1, 1);
 
-    const analyser = ctx.createAnalyser();
-    analyser.smoothingTimeConstant = 0.3;
-    analyser.fftSize = 1024;
+      const analyser = ctx.createAnalyser();
+      analyser.smoothingTimeConstant = 0.3;
+      analyser.fftSize = 1024;
 
-    source.connect(analyser);
-    analyser.connect(processor);
+      source.connect(analyser);
+      analyser.connect(processor);
 
-    const bins = new Uint8Array(analyser.frequencyBinCount);
+      const bins = new Uint8Array(analyser.frequencyBinCount);
 
-    processor.onaudioprocess = () => {
-      analyser.getByteFrequencyData(bins);
-      beatDetector.process(bins);
-    };
+      processor.onaudioprocess = () => {
+        analyser.getByteFrequencyData(bins);
+        beatDetector.process(bins);
+      };
 
-    const delay = ctx.createDelay();
-    delay.delayTime.value = 0.1;
+      const delay = ctx.createDelay();
+      delay.delayTime.value = 0.1;
 
-    processor.connect(ctx.destination);
+      processor.connect(ctx.destination);
 
-    source.connect(delay);
-    delay.connect(gain);
-    gain.connect(ctx.destination);
+      source.connect(delay);
+      delay.connect(gain);
+      gain.connect(ctx.destination);
 
-    function start() {
-      startTime = ctx.currentTime;
-      source.start();
-    }
+      function start() {
+        startTime = ctx.currentTime;
+        source.start();
+      }
 
-    function toggle() {
-      gain.gain.value ^= 1;
-    }
+      function toggle() {
+        gain.gain.value ^= 1;
+      }
 
-    function getTime() {
-      return ctx.currentTime - startTime;
-    }
+      function getTime() {
+        return ctx.currentTime - startTime;
+      }
 
-    return decodeAudio(data, ctx)
-      .then((buffer) => source.buffer = buffer)
-      .then(() => ({ start, toggle, getTime }));
+      return decodeAudio(data, ctx)
+        .then((buffer) => source.buffer = buffer)
+        .then(() => ({ start, toggle, getTime }));
+    });
   }
 
   function setupUi() {
@@ -941,7 +943,6 @@
 
       taskManager.whenDone()
         .then(() => pause(1000))
-        .then(() => userInteracted)
         .then(() => {
           showTrackInfo(activeTrack);
           setupAudioVisualization();

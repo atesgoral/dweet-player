@@ -143,12 +143,46 @@ h1 a:after {
   overflow: hidden;
   background: white;
   margin-top: 2rem;
+  position: relative;
 }
 
-#container[full-screen='true'] {
+#container[data-full-screen='true'] {
   height: auto;
   cursor: none;
   background: black;
+}
+
+#container[data-user-interacted='false']:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  z-index: 2;
+}
+
+#container[data-user-interacted='false']:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  margin-left: -1.25rem;
+  top: 50%;
+  margin-top: -2.5rem;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 2.5rem 0 2.5rem 4.33rem;
+  border-color: transparent transparent transparent #000;
+  z-index: 3;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+#container[data-user-interacted='false']:hover:after {
+  opacity: 1;
 }
 
 #audio-vis {

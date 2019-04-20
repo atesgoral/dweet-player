@@ -767,7 +767,7 @@
 
       source.loop = true;
 
-      const processor = ctx.createScriptProcessor(2048, 1, 1);
+      const processor = ctx.createScriptProcessor(0, 1, 1);
 
       const analyser = ctx.createAnalyser();
       analyser.smoothingTimeConstant = 0.3;
@@ -784,7 +784,7 @@
       };
 
       const delay = ctx.createDelay();
-      delay.delayTime.value = 0.1;
+      delay.delayTime.value = processor.bufferSize / ctx.sampleRate;
 
       processor.connect(ctx.destination);
 

@@ -658,9 +658,10 @@
       ctx.fillStyle = '#fff';
 
       const bins = beatDetector.bins;
+      const binW = (c.width - 16) / bins.length;
 
       for (let i = 0; i < bins.length; i++) {
-        ctx.fillRect(i, -c.height, 1, bins[i] / 255 * c.height);
+        ctx.fillRect(i * binW, -c.height, binW, bins[i] / 255 * c.height);
       }
 
       ctx.fillStyle = '#fff';
@@ -770,8 +771,7 @@
       const processor = ctx.createScriptProcessor(0, 1, 1);
 
       const analyser = ctx.createAnalyser();
-      analyser.smoothingTimeConstant = 0.3;
-      analyser.fftSize = 1024;
+      analyser.smoothingTimeConstant = 0.2;
 
       source.connect(analyser);
       analyser.connect(processor);

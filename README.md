@@ -36,6 +36,20 @@ Set the `FMA_API_KEY` variable on your Cloudflare Worker and run:
 npm run deploy
 ```
 
+## Worker overview
+
+The Worker serves the static player assets from `src/static` and re-implements
+the original Express endpoints under `/api`:
+
+- `GET /api/dweets/:id` fetches metadata from the Dwitter API.
+- `GET /api/tracks/:encodedUrl` normalises supported audio sources from Free
+  Music Archive and direct `.mp3` links.
+- `GET /api/proxy/:encodedUrl` proxies remote assets with cached responses so
+  browsers can fetch resources behind CORS restrictions.
+
+If any upstream request fails, the Worker returns a JSON error response to
+match the behaviour of the previous hosting environment.
+
 ## Usage
 
 ### Demo encoding

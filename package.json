@@ -1,10 +1,11 @@
 {
   "name": "dweet-player",
   "version": "0.0.0",
-  "description": "",
-  "main": "src/index.js",
+  "description": "Dweet player as a Cloudflare Worker",
+  "main": "src/worker.js",
   "scripts": {
-    "start": "node src/index",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
     "test": "echo \"Error: no test specified\" && exit 1",
     "gh-pages": "git subtree push --prefix src/static origin gh-pages"
   },
@@ -19,13 +20,11 @@
   },
   "homepage": "https://github.com/atesgoral/dweet-player#readme",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
-    "dotenv": "^4.0.0",
-    "esprima": "^4.0.0",
-    "estraverse": "^4.2.0",
-    "express": "^4.15.4",
-    "jsmediatags": "^3.8.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.4"
+    "cheerio": "^1.1.2",
+    "hono": "^4.9.10"
+  },
+  "devDependencies": {
+    "miniflare": "^4.20251001.0",
+    "wrangler": "^4.42.0"
   }
 }

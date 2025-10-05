@@ -4,16 +4,37 @@ Allows you to make multi-part demos out of [dweets](https://www.dwitter.net).
 
 ## Running locally
 
-Make a copy of .env.example as .env and edit accordingly. You need:
-- An API key from FMA
+This project now runs as a [Cloudflare Worker](https://developers.cloudflare.com/workers/). To run a local preview:
 
-Then:
+1. Install dependencies (requires Node.js 18+):
+   ```bash
+   npm install
+   ```
+2. Copy `.env.example` to `.dev.vars` (Cloudflare's local variable file) and set your [Free Music Archive API key](https://freemusicarchive.org/api).
+3. Start the worker:
+   ```bash
+   npm run dev
+   ```
+   This command uses Cloudflare's remote preview service so you don't need to
+   install or configure Miniflare separately.
+4. Visit the printed preview URL.
 
-`npm install`
+If you specifically want to emulate the Worker locally, you can run
 
-`npm start`
+```bash
+npm run preview
+```
 
-Then visit: http://localhost:7890
+`wrangler dev --local` bundles Miniflare internally, so no additional
+dependency is required.
+
+## Deploying
+
+Set the `FMA_API_KEY` variable on your Cloudflare Worker and run:
+
+```bash
+npm run deploy
+```
 
 ## Usage
 
@@ -27,7 +48,7 @@ Where:
 
 - **loader dweet ID** is the dweet to use as a loader. If you don't want to specify one, use "*" to randomly pick one from a pool. Loader dweets should complete their progress animation when t reaches 1.
 - **timeline** An array of scenes. Each scene is a dweet ID + some effects. More on this below.
-- **audio track URL** - Full URL of an audio track. Currently, only tracks URLs from [Free Music Archive](http://freemusicarchive.org/) are supported.
+- **audio track URL** - Full URL of an audio track. Tracks from [Free Music Archive](http://freemusicarchive.org/) and direct `.mp3` URLs are supported.
 
 The timeline string is a comma-separated list of scenes: `<scene 1>,<scene 2>,...`.
 

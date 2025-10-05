@@ -1,0 +1,10 @@
+name = "dweet-player"
+main = "src/worker.js"
+compatibility_date = "2023-10-18"
+
+[vars]
+# FMA_API_KEY = "set-your-api-key"
+
+[assets]
+directory = "src/static"
+binding = "ASSETS"

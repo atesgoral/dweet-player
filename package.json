@@ -1,31 +1,13 @@
 {
   "name": "dweet-player",
   "version": "0.0.0",
-  "description": "",
-  "main": "src/index.js",
+  "private": true,
   "scripts": {
-    "start": "node src/index",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "gh-pages": "git subtree push --prefix src/static origin gh-pages"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev --local"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/atesgoral/dweet-player.git"
-  },
-  "author": "Ates Goral <ates@magnetiq.com> (http://magnetiq.com/)",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/atesgoral/dweet-player/issues"
-  },
-  "homepage": "https://github.com/atesgoral/dweet-player#readme",
-  "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
-    "dotenv": "^4.0.0",
-    "esprima": "^4.0.0",
-    "estraverse": "^4.2.0",
-    "express": "^4.15.4",
-    "jsmediatags": "^3.8.0",
-    "request": "^2.88.0",
-    "request-promise-native": "^1.0.4"
+  "devDependencies": {
+    "wrangler": "^3.0.0"
   }
 }

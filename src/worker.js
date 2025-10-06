@@ -127,8 +127,9 @@ app.get('/api/proxy/:url{.+}', async (c) => {
 
 // SPA route - serve index.html for /demo/* paths (for client-side routing)
 app.get('/demo/*', async (c) => {
-  // Fetch the index.html from assets
-  return c.html(await (await fetch(new URL('/index.html', c.req.url))).text());
+  // Fetch the index.html from the assets binding
+  const assetResponse = await c.env.ASSETS.fetch(new URL('/index.html', c.req.url));
+  return c.html(await assetResponse.text());
 });
 
 // Note: Other static files (HTML, CSS, JS) are automatically served by Wrangler's asset handling

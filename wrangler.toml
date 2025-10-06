@@ -9,3 +9,7 @@ compatibility_flags = ["nodejs_compat"]
 # Static assets configuration
 [assets]
 directory = "./src/static"
+
+# Observability configuration
+[observability.logs]
+enabled = false

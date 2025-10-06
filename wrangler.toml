@@ -3,6 +3,11 @@ main = "src/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+# Custom domain
+routes = [
+  { pattern = "dweetplayer.net", custom_domain = true }
+]
+
 # Static assets configuration
 [assets]
 directory = "./src/static"

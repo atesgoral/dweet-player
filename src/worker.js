@@ -85,6 +85,15 @@ app.get('/api/proxy/:url{.+}', async (c) => {
       return c.json({ error: 'Only HTTP(S) URLs are allowed' }, 400);
     }
 
+    // Security: Block self-hosted files (use direct URL instead)
+    const requestHost = new URL(c.req.url).host;
+    if (parsedUrl.host === requestHost) {
+      return c.json({
+        error: 'Cannot proxy self-hosted files. Access them directly instead.',
+        directUrl: url
+      }, 400);
+    }
+
     // Security: Block private/local IP ranges
     const hostname = parsedUrl.hostname;
     if (

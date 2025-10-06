@@ -4,16 +4,12 @@ Allows you to make multi-part demos out of [dweets](https://www.dwitter.net).
 
 ## Running locally
 
-Make a copy of .env.example as .env and edit accordingly. You need:
-- An API key from FMA
+```bash
+npm install
+npm run dev
+```
 
-Then:
-
-`npm install`
-
-`npm start`
-
-Then visit: http://localhost:7890
+Then visit: http://localhost:8787
 
 ## Usage
 
@@ -27,7 +23,7 @@ Where:
 
 - **loader dweet ID** is the dweet to use as a loader. If you don't want to specify one, use "*" to randomly pick one from a pool. Loader dweets should complete their progress animation when t reaches 1.
 - **timeline** An array of scenes. Each scene is a dweet ID + some effects. More on this below.
-- **audio track URL** - Full URL of an audio track. Currently, only tracks URLs from [Free Music Archive](http://freemusicarchive.org/) are supported.
+- **audio track URL** - Full URL of an audio track. Currently, only direct MP3 URLs are supported.
 
 The timeline string is a comma-separated list of scenes: `<scene 1>,<scene 2>,...`.
 

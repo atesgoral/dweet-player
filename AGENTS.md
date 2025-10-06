@@ -135,6 +135,8 @@ enabled = true
 
 3. **CORS:** The proxy endpoint exists solely to bypass CORS for external MP3 files. Self-hosted files don't need it.
 
+4. **MP3 Metadata for Self-Hosted Files:** ID3 metadata extraction fails for self-hosted MP3 files due to circular fetch issues (worker cannot fetch from itself). Only external MP3 files can have their metadata extracted. Self-hosted files show "Unknown by Unknown". **TODO:** Consider client-side metadata extraction or pre-extracting metadata at build time.
+
 ## Dependencies
 
 **Runtime:**

@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/atesgoral/dweet-player#readme",
   "dependencies": {
-    "cheerio": "^1.1.2",
     "hono": "^4.9.10"
   },
   "devDependencies": {

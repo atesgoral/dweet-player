@@ -3,9 +3,6 @@ main = "src/worker.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Uncomment and set your FMA API key as a secret:
-# wrangler secret put FMA_API_KEY
-
 # Static assets configuration
 [assets]
 directory = "./src/static"

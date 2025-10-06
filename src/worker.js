@@ -1,14 +1,8 @@
 import { Hono } from 'hono';
-import * as cheerio from 'cheerio';
 
 const app = new Hono();
 
 const cacheMaxAge = 60 * 60 * 24; // 1 day
-
-function getCcLicenseTitleFromUrl(url) {
-  const tokens = /https?:\/\/creativecommons.org\/licenses\/([^/]+)\/([^/]+)/.exec(url);
-  return tokens && `CC ${tokens[1].toUpperCase().replace(/-/g, ' ')} ${tokens[2]}`;
-}
 
 // API route: Get dweet by ID
 app.get('/api/dweets/:id', async (c) => {
@@ -39,76 +33,27 @@ app.get('/api/dweets/:id', async (c) => {
   }
 });
 
-async function getFmaTrack(trackUrl, fmaApiKey) {
-  // Fetch the page to extract track ID
-  const pageResponse = await fetch(trackUrl);
-  const html = await pageResponse.text();
-  const $ = cheerio.load(html);
-  const className = $('.play-item').attr('class');
-  const tokens = /\btid-(\d+)/.exec(className);
-
-  if (!tokens) {
-    throw new Error('Could not extract track ID');
-  }
-
-  const trackId = tokens[1];
-
-  // Fetch track data from API
-  const apiUrl = `https://freemusicarchive.org/api/get/tracks.json?api_key=${fmaApiKey}&track_id=${trackId}`;
-  const apiResponse = await fetch(apiUrl);
-  const data = await apiResponse.json();
-  const track = data.dataset[0];
-
-  return {
-    audioUrl: trackUrl + '/download',
-    trackTitle: track.track_title,
-    trackUrl,
-    artistName: track.artist_name,
-    artistUrl: track.artist_url,
-    licenseTitle: getCcLicenseTitleFromUrl(track.license_url) || track.license_title,
-    licenseUrl: track.license_url
-  };
-}
-
-async function getMp3Track(trackUrl) {
-  // Note: ID3 tag reading (jsmediatags) won't work in Cloudflare Workers
-  // as it requires Node.js buffers. For now, return minimal info.
-  // You may want to implement this differently or remove this functionality.
-  const response = await fetch(trackUrl, { method: 'HEAD' });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch MP3');
-  }
-
-  return {
-    audioUrl: trackUrl,
-    trackTitle: 'Unknown',
-    artistName: 'Unknown'
-  };
-}
-
-const trackUrlHandlers = [{
-  pattern: /^https?:\/\/freemusicarchive\.org/,
-  get: getFmaTrack
-}, {
-  pattern: /\.mp3$/,
-  get: getMp3Track
-}];
-
-// API route: Get track info
+// API route: Get track info (MP3 only)
 app.get('/api/tracks/:trackUrl{.+}', async (c) => {
   try {
     const trackUrl = decodeURIComponent(c.req.param('trackUrl'));
-    const handler = trackUrlHandlers.find((handler) => handler.pattern.test(trackUrl));
 
-    if (!handler) {
-      return c.json({ error: 'Unsupported track URL' }, 400);
+    // Only support direct MP3 URLs
+    if (!trackUrl.endsWith('.mp3')) {
+      return c.json({ error: 'Only MP3 URLs are supported' }, 400);
     }
 
-    const fmaApiKey = c.env?.FMA_API_KEY;
-    const track = await handler.get(trackUrl, fmaApiKey);
+    const response = await fetch(trackUrl, { method: 'HEAD' });
 
-    return c.json(track, 200, {
+    if (!response.ok) {
+      throw new Error('Failed to fetch MP3');
+    }
+
+    return c.json({
+      audioUrl: trackUrl,
+      trackTitle: 'Unknown',
+      artistName: 'Unknown'
+    }, 200, {
       'Cache-Control': `public, max-age=${cacheMaxAge}`
     });
   } catch (error) {

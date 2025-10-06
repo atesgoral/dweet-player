@@ -11,6 +11,7 @@ routes = [
 # Static assets configuration
 [assets]
 directory = "./src/static"
+not_found_handling = "single-page-application"
 
 # Observability configuration
 [observability.logs]

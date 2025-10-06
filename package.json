@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/atesgoral/dweet-player#readme",
   "dependencies": {
-    "hono": "^4.9.10"
+    "hono": "^4.9.10",
+    "id3-parser": "^3.0.0"
   },
   "devDependencies": {
     "miniflare": "^4.20251001.0",

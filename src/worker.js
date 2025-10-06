@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import indexHtml from './static/index.html';
+import parseId3 from 'id3-parser';
 
 const app = new Hono();
 
@@ -49,19 +50,35 @@ app.get('/api/tracks/:trackUrl{.+}', async (c) => {
     const trackUrlObj = new URL(trackUrl);
     const isSelfHosted = trackUrlObj.host === requestHost;
 
-    // For self-hosted files, skip the HEAD check (they're served by assets)
-    // For external files, verify they exist
-    if (!isSelfHosted) {
-      const response = await fetch(trackUrl, { method: 'HEAD' });
-      if (!response.ok) {
-        throw new Error('Failed to fetch MP3');
-      }
+    // Fetch first 128KB to parse ID3 tags (tags are usually at the beginning)
+    const response = await fetch(trackUrl, {
+      headers: { 'Range': 'bytes=0-131071' } // 128KB
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch MP3');
+    }
+
+    // Parse ID3 tags
+    let trackTitle = 'Unknown';
+    let artistName = 'Unknown';
+
+    try {
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      const id3Tag = parseId3(uint8Array);
+
+      if (id3Tag.title) trackTitle = id3Tag.title;
+      if (id3Tag.artist) artistName = id3Tag.artist;
+    } catch (id3Error) {
+      // If ID3 parsing fails, continue with default values
+      console.error('ID3 parsing error:', id3Error);
     }
 
     return c.json({
       audioUrl: trackUrl,
-      trackTitle: 'Unknown',
-      artistName: 'Unknown'
+      trackTitle,
+      artistName
     }, 200, {
       'Cache-Control': `public, max-age=${cacheMaxAge}`
     });

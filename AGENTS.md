@@ -20,7 +20,7 @@ dweet-player is a Cloudflare Worker application that creates audiovisual demos f
 Cloudflare Worker handling:
 - **API Routes:**
   - `/api/dweets/:id` - Proxies dweet data from dwitter.net API
-  - `/api/tracks/:trackUrl` - Returns metadata for MP3 URLs (validates external, skips validation for self-hosted)
+  - `/api/tracks/:trackUrl` - Extracts ID3 metadata (artist, title) from MP3 files using Range requests (first 128KB)
   - `/api/proxy/:url` - CORS proxy for external MP3 files only (blocks self-hosted, private IPs, non-HTTP(S))
 - **Static Assets:** Served via Wrangler's asset system from `src/static/`
 - **SPA Routing:** `/demo/*` routes serve index.html for client-side routing
@@ -135,12 +135,11 @@ enabled = true
 
 3. **CORS:** The proxy endpoint exists solely to bypass CORS for external MP3 files. Self-hosted files don't need it.
 
-4. **ID3 Tags:** MP3 ID3 tag reading (jsmediatags) doesn't work in Workers due to Node.js buffer requirements. Track metadata is simplified to "Unknown" for now.
-
 ## Dependencies
 
 **Runtime:**
 - `hono` - Web framework for Cloudflare Workers
+- `id3-parser` - MP3 ID3 tag parsing for extracting artist/title metadata
 
 **Dev:**
 - `wrangler` - Cloudflare Workers CLI
@@ -149,6 +148,7 @@ enabled = true
 **Previously Removed:**
 - `cheerio` - Removed when FMA (Free Music Archive) support was dropped
 - `express`, `request`, `dotenv` - Removed during Cloudflare Worker migration
+- `jsmediatags` - Replaced with `id3-parser` (better Workers compatibility)
 
 ## Demo URL Format
 

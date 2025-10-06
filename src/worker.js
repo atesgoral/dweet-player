@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import indexHtml from './static/index.html';
 
 const app = new Hono();
 
@@ -126,12 +127,11 @@ app.get('/api/proxy/:url{.+}', async (c) => {
 });
 
 // SPA route - serve index.html for /demo/* paths (for client-side routing)
-app.get('/demo/*', async (c) => {
-  // Fetch the index.html from assets
-  return c.html(await (await fetch(new URL('/index.html', c.req.url))).text());
+app.get('/demo/*', (c) => {
+  return c.html(indexHtml);
 });
 
-// Note: Other static files (HTML, CSS, JS) are automatically served by Wrangler's asset handling
+// Note: Other static files (CSS, JS, images) are automatically served by Wrangler's asset handling
 // configured in wrangler.toml via [assets] directory setting
 
 export default app;

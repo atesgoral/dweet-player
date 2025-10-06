@@ -45,25 +45,20 @@ app.get('/api/tracks/:trackUrl{.+}', async (c) => {
       return c.json({ error: 'Only MP3 URLs are supported' }, 400);
     }
 
-    // Check if it's a self-hosted file (same domain)
-    const requestHost = new URL(c.req.url).host;
-    const trackUrlObj = new URL(trackUrl);
-    const isSelfHosted = trackUrlObj.host === requestHost;
-
-    // Fetch first 128KB to parse ID3 tags (tags are usually at the beginning)
-    const response = await fetch(trackUrl, {
-      headers: { 'Range': 'bytes=0-131071' } // 128KB
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch MP3');
-    }
-
-    // Parse ID3 tags
+    // Parse ID3 tags from all MP3 URLs (no special handling for any origin)
     let trackTitle = 'Unknown';
     let artistName = 'Unknown';
 
     try {
+      // Fetch first 128KB to parse ID3 tags (tags are usually at the beginning)
+      const response = await fetch(trackUrl, {
+        headers: { 'Range': 'bytes=0-131071' } // 128KB
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch MP3');
+      }
+
       const arrayBuffer = await response.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
       const id3Tag = parseId3(uint8Array);
@@ -101,15 +96,6 @@ app.get('/api/proxy/:url{.+}', async (c) => {
     const parsedUrl = new URL(url);
     if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
       return c.json({ error: 'Only HTTP(S) URLs are allowed' }, 400);
-    }
-
-    // Security: Block self-hosted files (use direct URL instead)
-    const requestHost = new URL(c.req.url).host;
-    if (parsedUrl.host === requestHost) {
-      return c.json({
-        error: 'Cannot proxy self-hosted files. Access them directly instead.',
-        directUrl: url
-      }, 400);
     }
 
     // Security: Block private/local IP ranges

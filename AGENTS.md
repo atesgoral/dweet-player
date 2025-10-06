@@ -129,13 +129,9 @@ enabled = true
 
 ## Known Issues & Gotchas
 
-1. **Self-Hosted Files:** Workers cannot fetch their own static assets via HTTP. The client detects self-hosted files and fetches them directly instead of using the proxy.
+1. **Circular Fetch:** Never make HTTP requests from the worker to its own domain - use the asset system or import assets at build time instead.
 
-2. **Circular Fetch:** Never make HTTP requests from the worker to its own domain - use the asset system or client-side fetching instead.
-
-3. **CORS:** The proxy endpoint exists solely to bypass CORS for external MP3 files. Self-hosted files don't need it.
-
-4. **MP3 Metadata for Self-Hosted Files:** ID3 metadata extraction fails for self-hosted MP3 files due to circular fetch issues (worker cannot fetch from itself). Only external MP3 files can have their metadata extracted. Self-hosted files show "Unknown by Unknown". **TODO:** Consider client-side metadata extraction or pre-extracting metadata at build time.
+2. **CORS:** The proxy endpoint exists to bypass CORS for external MP3 files. All MP3 files are expected to be hosted externally (e.g., GitHub raw, CDNs, etc.).
 
 ## Dependencies
 

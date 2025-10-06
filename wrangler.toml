@@ -9,4 +9,4 @@ directory = "./src/static"
 
 # Observability configuration
 [observability.logs]
-enabled = false
+enabled = true

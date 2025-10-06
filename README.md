@@ -2,7 +2,9 @@
 
 Allows you to make multi-part demos out of [dweets](https://www.dwitter.net).
 
-## Running locally
+Built as a Cloudflare Worker using Hono for HTTP routing.
+
+## Local Development
 
 ```bash
 npm install
@@ -10,6 +12,22 @@ npm run dev
 ```
 
 Then visit: http://localhost:8787
+
+## Deployment
+
+To deploy to Cloudflare Workers:
+
+```bash
+npm run deploy
+```
+
+## API Endpoints
+
+- `GET /api/dweets/:id` - Fetch dweet information from Dwitter
+- `GET /api/tracks/:trackUrl` - Fetch track metadata (MP3 URLs only)
+- `GET /api/proxy/:url` - Proxy requests to external URLs
+- `GET /` - Serve the main application
+- `GET /demo/:id` - SPA route for viewing specific dweets
 
 ## Usage
 

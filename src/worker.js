@@ -43,10 +43,18 @@ app.get('/api/tracks/:trackUrl{.+}', async (c) => {
       return c.json({ error: 'Only MP3 URLs are supported' }, 400);
     }
 
-    const response = await fetch(trackUrl, { method: 'HEAD' });
+    // Check if it's a self-hosted file (same domain)
+    const requestHost = new URL(c.req.url).host;
+    const trackUrlObj = new URL(trackUrl);
+    const isSelfHosted = trackUrlObj.host === requestHost;
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch MP3');
+    // For self-hosted files, skip the HEAD check (they're served by assets)
+    // For external files, verify they exist
+    if (!isSelfHosted) {
+      const response = await fetch(trackUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        throw new Error('Failed to fetch MP3');
+      }
     }
 
     return c.json({

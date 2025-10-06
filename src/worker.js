@@ -61,10 +61,36 @@ app.get('/api/tracks/:trackUrl{.+}', async (c) => {
   }
 });
 
-// API route: Proxy requests
+// API route: Proxy requests (MP3 files only for CORS bypass)
 app.get('/api/proxy/:url{.+}', async (c) => {
   try {
     const url = decodeURIComponent(c.req.param('url'));
+
+    // Security: Only allow MP3 files
+    if (!url.endsWith('.mp3')) {
+      return c.json({ error: 'Only MP3 files can be proxied' }, 400);
+    }
+
+    // Security: Only allow HTTP(S) protocols
+    const parsedUrl = new URL(url);
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return c.json({ error: 'Only HTTP(S) URLs are allowed' }, 400);
+    }
+
+    // Security: Block private/local IP ranges
+    const hostname = parsedUrl.hostname;
+    if (
+      hostname === 'localhost' ||
+      hostname.startsWith('127.') ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('172.16.') ||
+      hostname === '0.0.0.0' ||
+      hostname === '::1'
+    ) {
+      return c.json({ error: 'Cannot proxy to private IP addresses' }, 400);
+    }
+
     const response = await fetch(url);
 
     if (!response.ok) {

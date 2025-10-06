@@ -48,7 +48,13 @@
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
 
-      request.open('GET', `/api/proxy/${encodeURIComponent(url)}`, true);
+      // Check if URL is self-hosted (same domain)
+      const isSelfHosted = url.startsWith(window.location.origin);
+
+      // Self-hosted files can be fetched directly, external files need proxy for CORS
+      const fetchUrl = isSelfHosted ? url : `/api/proxy/${encodeURIComponent(url)}`;
+
+      request.open('GET', fetchUrl, true);
       request.responseType = 'arraybuffer';
 
       request.onload = () => resolve(request.response);
